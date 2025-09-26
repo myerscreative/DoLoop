@@ -68,7 +68,7 @@ const CreateLoopScreen: React.FC = () => {
           message: 'Loop created successfully!',
           type: 'success',
         });
-        router.replace(`/loop/${newLoop.id}`);
+        router.push(`/loop/${newLoop.id}`);
       } else {
         const error = await response.json();
         throw new Error(error.detail || 'Failed to create loop');
