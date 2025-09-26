@@ -87,7 +87,7 @@ class LoopResponse(BaseModel):
 class TaskCreate(BaseModel):
     loop_id: str
     description: str
-    type: str = Field(..., regex="^(recurring|one-time)$")
+    type: str = Field(..., pattern="^(recurring|one-time)$")
     assigned_user_id: Optional[str] = None
 
 class TaskResponse(BaseModel):
