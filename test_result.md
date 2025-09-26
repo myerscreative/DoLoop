@@ -106,7 +106,7 @@ user_problem_statement: "Build Doloop - A looping to-do list app for routines an
 
 backend:
   - task: "User Authentication System"
-    implemented: false
+    implemented: true
     working: "NA"
     file: "server.py"
     stuck_count: 0
@@ -115,10 +115,10 @@ backend:
     status_history:
       - working: "NA"
         agent: "main"
-        comment: "Planning basic email/password auth with JWT tokens"
+        comment: "Implemented JWT-based auth with bcrypt password hashing, registration and login endpoints"
 
   - task: "MongoDB Models Setup"
-    implemented: false
+    implemented: true
     working: "NA"
     file: "server.py"
     stuck_count: 0
@@ -127,10 +127,10 @@ backend:
     status_history:
       - working: "NA"
         agent: "main"
-        comment: "Need to create User, Loop, Task, LoopMember models"
+        comment: "Created Pydantic models for User, Loop, Task with proper validation"
 
   - task: "Loop CRUD API"
-    implemented: false
+    implemented: true
     working: "NA"
     file: "server.py"
     stuck_count: 0
@@ -139,10 +139,10 @@ backend:
     status_history:
       - working: "NA"
         agent: "main"
-        comment: "Create, read, update, delete loops with reset rules"
+        comment: "Implemented GET /loops, POST /loops with authentication and progress calculation"
 
   - task: "Task Management API"
-    implemented: false
+    implemented: true
     working: "NA"
     file: "server.py"
     stuck_count: 0
@@ -151,7 +151,7 @@ backend:
     status_history:
       - working: "NA"
         agent: "main"
-        comment: "Task CRUD, completion status, reloop functionality"
+        comment: "Implemented task CRUD, task completion, and reloop functionality with proper auth checks"
 
 frontend:
   - task: "Authentication Screens"
