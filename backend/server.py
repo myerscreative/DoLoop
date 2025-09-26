@@ -69,7 +69,7 @@ class LoopCreate(BaseModel):
     name: str
     description: Optional[str] = None
     color: str
-    reset_rule: str = Field(..., regex="^(manual|daily|weekly)$")
+    reset_rule: str = Field(..., pattern="^(manual|daily|weekly)$")
 
 class LoopResponse(BaseModel):
     id: str
