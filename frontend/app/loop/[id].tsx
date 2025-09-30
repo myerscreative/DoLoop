@@ -209,52 +209,51 @@ const LoopDetailScreen: React.FC = () => {
     return (
       <View key={task.id} style={styles.taskContainer}>
         {/* Main Task Row */}
-        <View style={[
-          styles.taskItem,
-          isCompleted && styles.taskItemCompleted
-        ]}>
-          {/* Task Content */}
-          <TouchableOpacity
-            style={styles.taskMainRow}
-            onPress={() => !isCompleted && handleCompleteTask(task.id)}
-            disabled={isCompleted}
-          >
-            <View style={[
-              styles.taskRadio,
-              isCompleted && styles.taskRadioCompleted,
-              { borderColor: loop?.color || Colors.light.primary }
-            ]}>
-              {isCompleted && (
-                <View style={[styles.taskRadioFill, { backgroundColor: loop?.color || Colors.light.primary }]} />
-              )}
-            </View>
-            <Text style={[
-              styles.taskText,
-              isCompleted && styles.taskTextCompleted
-            ]}>
-              {task.description}
-            </Text>
-            <View style={styles.taskIcons}>
-              {task.type === 'recurring' && (
-                <Ionicons name="refresh" size={14} color={Colors.light.textSecondary} />
-              )}
-              {isCompleted && (
-                <Ionicons name="checkmark-circle" size={14} color={Colors.light.success} />
-              )}
-            </View>
-          </TouchableOpacity>
+        <View style={styles.taskItem}>
+          <View style={styles.taskMainContent}>
+            {/* Task Content */}
+            <TouchableOpacity
+              style={styles.taskMainRow}
+              onPress={() => !isCompleted && handleCompleteTask(task.id)}
+              disabled={isCompleted}
+            >
+              <View style={[
+                styles.taskRadio,
+                isCompleted && styles.taskRadioCompleted,
+                { borderColor: loop?.color || Colors.light.primary }
+              ]}>
+                {isCompleted && (
+                  <View style={[styles.taskRadioFill, { backgroundColor: loop?.color || Colors.light.primary }]} />
+                )}
+              </View>
+              <Text style={[
+                styles.taskText,
+                isCompleted && styles.taskTextCompleted
+              ]}>
+                {task.description}
+              </Text>
+              <View style={styles.taskIcons}>
+                {task.type === 'recurring' && (
+                  <Ionicons name="refresh" size={14} color={Colors.light.textSecondary} />
+                )}
+                {isCompleted && (
+                  <Ionicons name="checkmark-circle" size={14} color={Colors.light.success} />
+                )}
+              </View>
+            </TouchableOpacity>
 
-          {/* Expand/Collapse Button */}
-          <TouchableOpacity 
-            style={styles.expandButton}
-            onPress={() => toggleTaskExpanded(task.id)}
-          >
-            <Ionicons 
-              name={isExpanded ? "chevron-up" : "chevron-down"} 
-              size={20} 
-              color={Colors.light.textSecondary} 
-            />
-          </TouchableOpacity>
+            {/* Expand/Collapse Button */}
+            <TouchableOpacity 
+              style={styles.expandButton}
+              onPress={() => toggleTaskExpanded(task.id)}
+            >
+              <Ionicons 
+                name={isExpanded ? "chevron-up" : "chevron-down"} 
+                size={20} 
+                color={Colors.light.textSecondary} 
+              />
+            </TouchableOpacity>
+          </View>
         </View>
         
         {/* Task Actions - Only show when expanded */}
