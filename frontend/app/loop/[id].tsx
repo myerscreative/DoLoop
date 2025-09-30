@@ -169,52 +169,102 @@ const LoopDetailScreen: React.FC = () => {
     }
   };
 
-  const renderTask = (task: Task) => {
+  const TaskActionRow: React.FC<{ 
+    icon: keyof typeof Ionicons.glyphMap; 
+    label: string; 
+    onPress?: () => void;
+    value?: string;
+    color?: string;
+  }> = ({ icon, label, onPress, value, color = Colors.light.textSecondary }) => (
+    <TouchableOpacity 
+      style={styles.actionRow} 
+      onPress={onPress}
+      disabled={!onPress}
+    >
+      <Ionicons name={icon} size={20} color={color} />
+      <Text style={styles.actionLabel}>{label}</Text>
+      {value && <Text style={styles.actionValue}>{value}</Text>}
+      {onPress && <Ionicons name="chevron-forward" size={16} color={Colors.light.textSecondary} />}
+    </TouchableOpacity>
+  );
+
+  const renderTask = (task: Task, index: number) => {
     const isCompleted = task.status === 'completed';
     const isArchived = task.status === 'archived';
     
     if (isArchived) return null; // Don't show archived tasks
     
     return (
-      <TouchableOpacity
-        key={task.id}
-        style={[
-          styles.taskItem,
-          isCompleted && styles.taskItemCompleted
-        ]}
-        onPress={() => !isCompleted && handleCompleteTask(task.id)}
-        disabled={isCompleted}
-      >
-        <View style={styles.taskContent}>
-          <View style={[
-            styles.taskCheckbox,
-            isCompleted && styles.taskCheckboxCompleted,
-            { borderColor: loop?.color || Colors.light.primary }
-          ]}>
-            {isCompleted && (
-              <Ionicons name="checkmark" size={16} color={Colors.light.background} />
-            )}
-          </View>
-          <View style={styles.taskTextContainer}>
+      <View key={task.id} style={styles.taskContainer}>
+        <TouchableOpacity
+          style={[
+            styles.taskItem,
+            isCompleted && styles.taskItemCompleted
+          ]}
+          onPress={() => !isCompleted && handleCompleteTask(task.id)}
+          disabled={isCompleted}
+        >
+          <View style={styles.taskHeader}>
+            <View style={[
+              styles.taskRadio,
+              isCompleted && styles.taskRadioCompleted,
+              { borderColor: loop?.color || Colors.light.primary }
+            ]}>
+              {isCompleted && (
+                <View style={[styles.taskRadioFill, { backgroundColor: loop?.color || Colors.light.primary }]} />
+              )}
+            </View>
             <Text style={[
               styles.taskText,
               isCompleted && styles.taskTextCompleted
             ]}>
               {task.description}
             </Text>
-            <View style={styles.taskMeta}>
-              <Text style={styles.taskType}>
-                {task.type === 'recurring' ? 'Recurring' : 'One-time'}
-              </Text>
-              {isCompleted && task.completed_at && (
-                <Text style={styles.taskCompletedTime}>
-                  Completed {new Date(task.completed_at).toLocaleDateString()}
-                </Text>
+            <View style={styles.taskIcons}>
+              {task.type === 'recurring' && (
+                <Ionicons name="refresh" size={14} color={Colors.light.textSecondary} />
+              )}
+              {isCompleted && (
+                <Ionicons name="checkmark-circle" size={14} color={Colors.light.success} />
               )}
             </View>
           </View>
+        </TouchableOpacity>
+        
+        {/* Task Actions - Similar to your design concept */}
+        <View style={styles.taskActions}>
+          <TaskActionRow 
+            icon="calendar-outline" 
+            label="Add Due Date" 
+            onPress={() => {/* TODO: Implement date picker */}}
+          />
+          <TaskActionRow 
+            icon="person-outline" 
+            label="Assign to" 
+            onPress={() => {/* TODO: Implement user assignment */}}
+          />
+          <TaskActionRow 
+            icon="pricetag-outline" 
+            label="Add Tag" 
+            onPress={() => {/* TODO: Implement tagging */}}
+          />
+          <TaskActionRow 
+            icon="attach-outline" 
+            label="Attach File" 
+            onPress={() => {/* TODO: Implement file attachment */}}
+          />
+          <TaskActionRow 
+            icon="camera-outline" 
+            label="Attach Image" 
+            onPress={() => {/* TODO: Implement image attachment */}}
+          />
+          <TaskActionRow 
+            icon="chatbubble-outline" 
+            label="Add Note" 
+            onPress={() => {/* TODO: Implement note adding */}}
+          />
         </View>
-      </TouchableOpacity>
+      </View>
     );
   };
 
@@ -250,13 +300,19 @@ const LoopDetailScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
+      {/* Header styled like your design concept */}
+      <View style={[styles.header, { backgroundColor: loop.color }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color={Colors.light.text} />
+          <Ionicons name="arrow-back" size={24} color={Colors.light.background} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle} numberOfLines={1}>{loop.name}</Text>
-        <TouchableOpacity onPress={handleReloop} style={styles.reloopButton}>
-          <Ionicons name="refresh" size={24} color={loop.color} />
+        <View style={styles.headerContent}>
+          <View style={styles.loopIcon}>
+            <Ionicons name="sync" size={20} color={loop.color} />
+          </View>
+          <Text style={styles.headerTitle}>{loop.name}</Text>
+        </View>
+        <TouchableOpacity onPress={handleReloop} style={styles.headerAction}>
+          <Ionicons name="refresh" size={24} color={Colors.light.background} />
         </TouchableOpacity>
       </View>
 
@@ -266,67 +322,41 @@ const LoopDetailScreen: React.FC = () => {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        {/* Loop Info Card */}
-        <View style={[styles.loopCard, { borderLeftColor: loop.color }]}>
-          <View style={styles.loopHeader}>
-            <View style={styles.loopInfo}>
-              <Text style={styles.loopName}>{loop.name}</Text>
-              {loop.description && (
-                <Text style={styles.loopDescription}>{loop.description}</Text>
-              )}
-            </View>
-            <View style={styles.loopStats}>
-              <Text style={styles.loopProgress}>{progress}%</Text>
-              <Text style={styles.loopTaskCount}>
-                {completedTasks}/{totalActiveTasks}
-              </Text>
-            </View>
-          </View>
-          
-          <View style={styles.progressContainer}>
-            <View style={styles.progressBackground}>
-              <View 
-                style={[styles.progressFill, { width: `${progress}%`, backgroundColor: loop.color }]} 
-              />
-            </View>
-            <View style={styles.resetInfo}>
-              <Ionicons 
-                name={loop.reset_rule === 'manual' ? 'hand-left' : loop.reset_rule === 'daily' ? 'calendar' : 'calendar-outline'} 
-                size={12} 
-                color={Colors.light.textSecondary} 
-              />
-              <Text style={styles.resetText}>{loop.reset_rule} reset</Text>
-            </View>
+        {/* Progress Overview */}
+        <View style={styles.progressCard}>
+          <Text style={styles.progressText}>
+            {completedTasks} of {totalActiveTasks} tasks completed ({progress}%)
+          </Text>
+          <View style={styles.progressBar}>
+            <View 
+              style={[styles.progressFill, { width: `${progress}%`, backgroundColor: loop.color }]} 
+            />
           </View>
         </View>
 
-        {/* Tasks Section */}
-        <View style={styles.tasksSection}>
-          <View style={styles.tasksSectionHeader}>
-            <Text style={styles.tasksSectionTitle}>Tasks</Text>
-            <TouchableOpacity 
-              style={[styles.addTaskButton, { backgroundColor: loop.color }]}
-              onPress={() => setShowAddTask(true)}
-            >
-              <Ionicons name="add" size={20} color={Colors.light.background} />
-              <Text style={styles.addTaskButtonText}>Add Task</Text>
-            </TouchableOpacity>
+        {/* Tasks List */}
+        {tasks.length === 0 ? (
+          <View style={styles.emptyTasks}>
+            <Ionicons name="list" size={48} color={Colors.light.textSecondary} />
+            <Text style={styles.emptyTasksTitle}>No tasks yet</Text>
+            <Text style={styles.emptyTasksDescription}>
+              Add your first task to get started with this loop.
+            </Text>
           </View>
+        ) : (
+          <View style={styles.tasksList}>
+            {tasks.map((task, index) => renderTask(task, index))}
+          </View>
+        )}
 
-          {tasks.length === 0 ? (
-            <View style={styles.emptyTasks}>
-              <Ionicons name="list" size={48} color={Colors.light.textSecondary} />
-              <Text style={styles.emptyTasksTitle}>No tasks yet</Text>
-              <Text style={styles.emptyTasksDescription}>
-                Add your first task to get started with this loop.
-              </Text>
-            </View>
-          ) : (
-            <View style={styles.tasksList}>
-              {tasks.map(renderTask)}
-            </View>
-          )}
-        </View>
+        {/* Add Task Button */}
+        <TouchableOpacity 
+          style={styles.addStepButton}
+          onPress={() => setShowAddTask(true)}
+        >
+          <Ionicons name="add" size={20} color={loop.color} />
+          <Text style={[styles.addStepText, { color: loop.color }]}>Add Step</Text>
+        </TouchableOpacity>
       </ScrollView>
 
       {/* Add Task Modal */}
@@ -339,7 +369,7 @@ const LoopDetailScreen: React.FC = () => {
             >
               <Text style={styles.modalCloseText}>Cancel</Text>
             </TouchableOpacity>
-            <Text style={styles.modalTitle}>Add Task</Text>
+            <Text style={styles.modalTitle}>Add New Task</Text>
             <TouchableOpacity 
               onPress={handleAddTask}
               disabled={!newTaskText.trim() || addingTask}
@@ -371,46 +401,40 @@ const LoopDetailScreen: React.FC = () => {
                 <TouchableOpacity
                   style={[
                     styles.taskTypeOption,
-                    newTaskType === 'recurring' && styles.taskTypeOptionSelected
+                    newTaskType === 'recurring' && [styles.taskTypeOptionSelected, { borderColor: loop?.color }]
                   ]}
                   onPress={() => setNewTaskType('recurring')}
                 >
                   <Ionicons 
                     name="refresh" 
                     size={16} 
-                    color={newTaskType === 'recurring' ? loop.color : Colors.light.textSecondary} 
+                    color={newTaskType === 'recurring' ? (loop?.color || Colors.light.primary) : Colors.light.textSecondary} 
                   />
                   <Text style={[
                     styles.taskTypeText,
-                    newTaskType === 'recurring' && styles.taskTypeTextSelected
+                    newTaskType === 'recurring' && { color: loop?.color || Colors.light.primary }
                   ]}>
-                    Recurring
-                  </Text>
-                  <Text style={styles.taskTypeDescription}>
-                    Resets when loop resets
+                    Loop Item (Recurring)
                   </Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
                   style={[
                     styles.taskTypeOption,
-                    newTaskType === 'one-time' && styles.taskTypeOptionSelected
+                    newTaskType === 'one-time' && [styles.taskTypeOptionSelected, { borderColor: loop?.color }]
                   ]}
                   onPress={() => setNewTaskType('one-time')}
                 >
                   <Ionicons 
-                    name="checkmark-circle" 
+                    name="checkmark-circle-outline" 
                     size={16} 
-                    color={newTaskType === 'one-time' ? loop.color : Colors.light.textSecondary} 
+                    color={newTaskType === 'one-time' ? (loop?.color || Colors.light.primary) : Colors.light.textSecondary} 
                   />
                   <Text style={[
                     styles.taskTypeText,
-                    newTaskType === 'one-time' && styles.taskTypeTextSelected
+                    newTaskType === 'one-time' && { color: loop?.color || Colors.light.primary }
                   ]}>
-                    One-time
-                  </Text>
-                  <Text style={styles.taskTypeDescription}>
-                    Archives when completed
+                    One Time Task
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -460,130 +484,65 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.light.backgroundSecondary,
+    paddingTop: 50,
   },
   backButton: {
     padding: 8,
   },
+  headerContent: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: 16,
+  },
+  loopIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: Colors.light.background,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
   headerTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: Colors.light.text,
-    flex: 1,
-    textAlign: 'center',
-    marginHorizontal: 16,
+    color: Colors.light.background,
   },
-  reloopButton: {
+  headerAction: {
     padding: 8,
   },
   content: {
     flex: 1,
   },
-  loopCard: {
+  progressCard: {
     backgroundColor: Colors.light.surface,
     margin: 16,
-    borderRadius: 16,
     padding: 16,
-    borderLeftWidth: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    borderRadius: 12,
   },
-  loopHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 12,
-  },
-  loopInfo: {
-    flex: 1,
-    marginRight: 16,
-  },
-  loopName: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: Colors.light.text,
-    marginBottom: 4,
-  },
-  loopDescription: {
+  progressText: {
     fontSize: 14,
     color: Colors.light.textSecondary,
-    lineHeight: 20,
+    marginBottom: 8,
   },
-  loopStats: {
-    alignItems: 'flex-end',
-  },
-  loopProgress: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: Colors.light.text,
-  },
-  loopTaskCount: {
-    fontSize: 12,
-    color: Colors.light.textSecondary,
-    marginTop: 2,
-  },
-  progressContainer: {
-    marginTop: 8,
-  },
-  progressBackground: {
-    height: 8,
+  progressBar: {
+    height: 6,
     backgroundColor: Colors.light.backgroundSecondary,
-    borderRadius: 4,
+    borderRadius: 3,
     overflow: 'hidden',
   },
   progressFill: {
     height: '100%',
-    borderRadius: 4,
-  },
-  resetInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  resetText: {
-    fontSize: 12,
-    color: Colors.light.textSecondary,
-    marginLeft: 4,
-    textTransform: 'capitalize',
-  },
-  tasksSection: {
-    paddingHorizontal: 16,
-    paddingBottom: 24,
-  },
-  tasksSectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  tasksSectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: Colors.light.text,
-  },
-  addTaskButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-  },
-  addTaskButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: Colors.light.background,
-    marginLeft: 4,
+    borderRadius: 3,
   },
   emptyTasks: {
     alignItems: 'center',
-    paddingVertical: 40,
+    paddingVertical: 60,
+    paddingHorizontal: 24,
   },
   emptyTasksTitle: {
     fontSize: 18,
@@ -599,58 +558,92 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   tasksList: {
-    gap: 8,
+    paddingHorizontal: 16,
   },
-  taskItem: {
+  taskContainer: {
+    marginBottom: 12,
     backgroundColor: Colors.light.surface,
     borderRadius: 12,
+    overflow: 'hidden',
+  },
+  taskItem: {
     padding: 16,
   },
   taskItemCompleted: {
     opacity: 0.7,
   },
-  taskContent: {
+  taskHeader: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  taskCheckbox: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+  taskRadio: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
     borderWidth: 2,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
   },
-  taskCheckboxCompleted: {
-    backgroundColor: Colors.light.success,
-    borderColor: Colors.light.success,
+  taskRadioCompleted: {
+    backgroundColor: Colors.light.backgroundSecondary,
   },
-  taskTextContainer: {
-    flex: 1,
+  taskRadioFill: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
   },
   taskText: {
+    flex: 1,
     fontSize: 16,
     color: Colors.light.text,
-    marginBottom: 4,
   },
   taskTextCompleted: {
     textDecorationLine: 'line-through',
     color: Colors.light.textSecondary,
   },
-  taskMeta: {
+  taskIcons: {
+    flexDirection: 'row',
+    gap: 4,
+  },
+  taskActions: {
+    borderTopWidth: 1,
+    borderTopColor: Colors.light.backgroundSecondary,
+    paddingVertical: 8,
+  },
+  actionRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
   },
-  taskType: {
-    fontSize: 12,
+  actionLabel: {
+    flex: 1,
+    fontSize: 14,
     color: Colors.light.textSecondary,
-    textTransform: 'capitalize',
+    marginLeft: 12,
   },
-  taskCompletedTime: {
+  actionValue: {
     fontSize: 12,
-    color: Colors.light.textSecondary,
+    color: Colors.light.primary,
+    marginRight: 8,
+  },
+  addStepButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    margin: 16,
+    padding: 16,
+    backgroundColor: Colors.light.surface,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: Colors.light.backgroundSecondary,
+    borderStyle: 'dashed',
+  },
+  addStepText: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 8,
   },
   modalContainer: {
     flex: 1,
@@ -717,6 +710,8 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   taskTypeOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: Colors.light.surface,
     borderRadius: 12,
     padding: 16,
@@ -724,23 +719,13 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
   },
   taskTypeOptionSelected: {
-    borderColor: Colors.light.primary,
     backgroundColor: Colors.light.backgroundSecondary,
   },
   taskTypeText: {
     fontSize: 16,
     fontWeight: '600',
     color: Colors.light.text,
-    marginLeft: 8,
-    marginBottom: 4,
-  },
-  taskTypeTextSelected: {
-    color: Colors.light.primary,
-  },
-  taskTypeDescription: {
-    fontSize: 12,
-    color: Colors.light.textSecondary,
-    marginLeft: 24,
+    marginLeft: 12,
   },
 });
 
