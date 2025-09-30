@@ -170,6 +170,16 @@ const LoopDetailScreen: React.FC = () => {
     }
   };
 
+  const toggleTaskExpanded = (taskId: string) => {
+    const newExpanded = new Set(expandedTasks);
+    if (newExpanded.has(taskId)) {
+      newExpanded.delete(taskId);
+    } else {
+      newExpanded.add(taskId);
+    }
+    setExpandedTasks(newExpanded);
+  };
+
   const TaskActionRow: React.FC<{ 
     icon: keyof typeof Ionicons.glyphMap; 
     label: string; 
