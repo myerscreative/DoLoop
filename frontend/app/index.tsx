@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   SafeAreaView,
   RefreshControl,
+  TextInput,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
@@ -22,6 +23,8 @@ const Dashboard: React.FC = () => {
   const [loops, setLoops] = useState<Loop[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [searchText, setSearchText] = useState('');
+  const [favorites, setFavorites] = useState<Loop[]>([]);
 
   const fetchLoops = async () => {
     try {
@@ -35,6 +38,8 @@ const Dashboard: React.FC = () => {
       if (response.ok) {
         const data = await response.json();
         setLoops(data);
+        // For now, consider loops with high progress as favorites
+        setFavorites(data.filter((loop: Loop) => (loop.progress || 0) > 50).slice(0, 5));
       }
     } catch (error) {
       console.log('Error fetching loops:', error);
@@ -53,48 +58,44 @@ const Dashboard: React.FC = () => {
     fetchLoops();
   };
 
-  const renderLoopCard = (loop: Loop) => {
-    const progressWidth = `${loop.progress || 0}%`;
-    
-    return (
-      <TouchableOpacity
-        key={loop.id}
-        style={[styles.loopCard, { borderLeftColor: loop.color }]}
-        onPress={() => router.push(`/loop/${loop.id}`)}
-      >
-        <View style={styles.loopHeader}>
-          <View style={styles.loopInfo}>
-            <Text style={styles.loopName}>{loop.name}</Text>
-            {loop.description && (
-              <Text style={styles.loopDescription}>{loop.description}</Text>
-            )}
-          </View>
-          <View style={styles.loopStats}>
-            <Text style={styles.loopProgress}>{loop.progress || 0}%</Text>
-            <Text style={styles.loopTaskCount}>
-              {loop.completed_tasks || 0}/{loop.total_tasks || 0}
-            </Text>
-          </View>
-        </View>
-        
-        <View style={styles.progressContainer}>
-          <View style={styles.progressBackground}>
-            <View 
-              style={[styles.progressFill, { width: progressWidth, backgroundColor: loop.color }]} 
-            />
-          </View>
-          <View style={styles.resetInfo}>
-            <Ionicons 
-              name={loop.reset_rule === 'manual' ? 'hand-left' : loop.reset_rule === 'daily' ? 'calendar' : 'calendar-outline'} 
-              size={12} 
-              color={Colors.light.textSecondary} 
-            />
-            <Text style={styles.resetText}>{loop.reset_rule}</Text>
-          </View>
-        </View>
+  const CategoryButton: React.FC<{ 
+    title: string; 
+    icon: keyof typeof Ionicons.glyphMap; 
+    color: string;
+    onPress: () => void;
+  }> = ({ title, icon, color, onPress }) => (
+    <TouchableOpacity style={[styles.categoryButton, { backgroundColor: color }]} onPress={onPress}>
+      <Ionicons name={icon} size={24} color={Colors.light.background} />
+      <Text style={styles.categoryButtonText}>{title}</Text>
+    </TouchableOpacity>
+  );
+
+  const FavoriteItem: React.FC<{ loop: Loop }> = ({ loop }) => (
+    <TouchableOpacity 
+      style={styles.favoriteItem}
+      onPress={() => router.push(`/loop/${loop.id}`)}
+    >
+      <View style={[styles.favoriteIcon, { backgroundColor: loop.color }]}>
+        <Ionicons name="sync" size={16} color={Colors.light.background} />
+      </View>
+      <Text style={styles.favoriteText}>{loop.name}</Text>
+      <TouchableOpacity style={styles.favoriteAction}>
+        <Ionicons name="add-circle" size={20} color={Colors.light.primary} />
       </TouchableOpacity>
-    );
-  };
+    </TouchableOpacity>
+  );
+
+  const MyLoopItem: React.FC<{ title: string; icon: keyof typeof Ionicons.glyphMap; count?: number }> = ({ title, icon, count }) => (
+    <TouchableOpacity style={styles.myLoopItem} onPress={() => {/* TODO: Navigate to filtered view */}}>
+      <Ionicons name={icon} size={20} color={Colors.light.textSecondary} />
+      <Text style={styles.myLoopText}>{title}</Text>
+      {count !== undefined && (
+        <View style={styles.countBadge}>
+          <Text style={styles.countText}>{count}</Text>
+        </View>
+      )}
+    </TouchableOpacity>
+  );
 
   if (loading) {
     return (
@@ -111,7 +112,7 @@ const Dashboard: React.FC = () => {
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <View style={styles.logoContainer}>
-            <Ionicons name="sync" size={24} color={Colors.light.primary} />
+            <Ionicons name="sync" size={20} color={Colors.light.primary} />
           </View>
           <View>
             <Text style={styles.welcomeText}>Welcome back</Text>
@@ -129,36 +130,84 @@ const Dashboard: React.FC = () => {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        <View style={styles.sectionHeader}>
+        {/* Search Bar */}
+        <View style={styles.searchContainer}>
+          <View style={styles.searchBar}>
+            <Ionicons name="search" size={20} color={Colors.light.textSecondary} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search for loops, tasks, notes, etc"
+              placeholderTextColor={Colors.light.textSecondary}
+              value={searchText}
+              onChangeText={setSearchText}
+            />
+          </View>
+        </View>
+
+        {/* Favorites Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Favorites</Text>
+          {favorites.length > 0 ? (
+            favorites.map((loop) => (
+              <FavoriteItem key={loop.id} loop={loop} />
+            ))
+          ) : (
+            <Text style={styles.emptyText}>No favorites yet</Text>
+          )}
+        </View>
+
+        {/* My Loops Section */}
+        <View style={styles.section}>
           <Text style={styles.sectionTitle}>My Loops</Text>
+          <View style={styles.myLoopsList}>
+            <MyLoopItem title="My Day" icon="today" count={3} />
+            <MyLoopItem title="Important" icon="flag" count={2} />
+            <MyLoopItem title="Planned" icon="calendar" count={5} />
+            <MyLoopItem title="Assigned to me" icon="person" count={1} />
+          </View>
+        </View>
+
+        {/* Loop Library Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Loop Library</Text>
+          <View style={styles.categoryGrid}>
+            <CategoryButton 
+              title="Favorites" 
+              icon="heart" 
+              color={Colors.light.primary}
+              onPress={() => router.push('/library?category=favorites')}
+            />
+            <CategoryButton 
+              title="Personal" 
+              icon="person" 
+              color={Colors.light.accent1}
+              onPress={() => router.push('/library?category=personal')}
+            />
+            <CategoryButton 
+              title="Work" 
+              icon="briefcase" 
+              color={Colors.light.accent2}
+              onPress={() => router.push('/library?category=work')}
+            />
+            <CategoryButton 
+              title="Shared" 
+              icon="people" 
+              color={Colors.light.secondary}
+              onPress={() => router.push('/library?category=shared')}
+            />
+          </View>
+        </View>
+
+        {/* Quick Actions */}
+        <View style={styles.quickActions}>
           <TouchableOpacity 
             style={styles.createButton}
             onPress={() => router.push('/create-loop')}
           >
-            <Ionicons name="add" size={20} color={Colors.light.background} />
-            <Text style={styles.createButtonText}>New Loop</Text>
+            <Ionicons name="add" size={24} color={Colors.light.background} />
+            <Text style={styles.createButtonText}>Create New Loop</Text>
           </TouchableOpacity>
         </View>
-
-        {loops.length === 0 ? (
-          <View style={styles.emptyState}>
-            <Ionicons name="sync" size={48} color={Colors.light.textSecondary} />
-            <Text style={styles.emptyTitle}>No loops yet</Text>
-            <Text style={styles.emptyDescription}>
-              Create your first loop to start organizing your routines and recurring tasks.
-            </Text>
-            <TouchableOpacity 
-              style={styles.emptyCreateButton}
-              onPress={() => router.push('/create-loop')}
-            >
-              <Text style={styles.emptyCreateButtonText}>Create Your First Loop</Text>
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <View style={styles.loopsContainer}>
-            {loops.map(renderLoopCard)}
-          </View>
-        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -191,9 +240,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logoContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: Colors.light.backgroundSecondary,
     justifyContent: 'center',
     alignItems: 'center',
@@ -213,134 +262,134 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingHorizontal: 24,
   },
-  sectionHeader: {
+  searchContainer: {
+    paddingHorizontal: 24,
+    paddingVertical: 8,
+  },
+  searchBar: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    backgroundColor: Colors.light.surface,
+    borderRadius: 24,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  searchInput: {
+    flex: 1,
+    marginLeft: 8,
+    fontSize: 16,
+    color: Colors.light.text,
+  },
+  section: {
+    paddingHorizontal: 24,
+    paddingVertical: 16,
   },
   sectionTitle: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
     color: Colors.light.text,
+    marginBottom: 16,
+  },
+  favoriteItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.light.backgroundSecondary,
+  },
+  favoriteIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  favoriteText: {
+    flex: 1,
+    fontSize: 16,
+    color: Colors.light.text,
+  },
+  favoriteAction: {
+    padding: 4,
+  },
+  emptyText: {
+    fontSize: 14,
+    color: Colors.light.textSecondary,
+    fontStyle: 'italic',
+    textAlign: 'center',
+    paddingVertical: 16,
+  },
+  myLoopsList: {
+    gap: 8,
+  },
+  myLoopItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.light.surface,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    borderRadius: 12,
+  },
+  myLoopText: {
+    flex: 1,
+    fontSize: 16,
+    color: Colors.light.text,
+    marginLeft: 12,
+  },
+  countBadge: {
+    backgroundColor: Colors.light.primary,
+    borderRadius: 12,
+    minWidth: 24,
+    height: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 6,
+  },
+  countText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: Colors.light.text,
+  },
+  categoryGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  categoryButton: {
+    flex: 1,
+    minWidth: '47%',
+    paddingVertical: 20,
+    paddingHorizontal: 16,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 80,
+  },
+  categoryButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: Colors.light.background,
+    marginTop: 8,
+  },
+  quickActions: {
+    paddingHorizontal: 24,
+    paddingVertical: 16,
   },
   createButton: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: Colors.light.primary,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
+    paddingVertical: 16,
+    borderRadius: 12,
   },
   createButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: Colors.light.background,
-    marginLeft: 4,
-  },
-  emptyState: {
-    alignItems: 'center',
-    paddingVertical: 60,
-  },
-  emptyTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: Colors.light.text,
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  emptyDescription: {
-    fontSize: 16,
-    color: Colors.light.textSecondary,
-    textAlign: 'center',
-    marginBottom: 24,
-    lineHeight: 24,
-  },
-  emptyCreateButton: {
-    backgroundColor: Colors.light.secondary,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 24,
-  },
-  emptyCreateButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: Colors.light.background,
-  },
-  loopsContainer: {
-    paddingBottom: 24,
-  },
-  loopCard: {
-    backgroundColor: Colors.light.surface,
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 16,
-    borderLeftWidth: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  loopHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 12,
-  },
-  loopInfo: {
-    flex: 1,
-    marginRight: 16,
-  },
-  loopName: {
     fontSize: 18,
     fontWeight: '600',
-    color: Colors.light.text,
-    marginBottom: 4,
-  },
-  loopDescription: {
-    fontSize: 14,
-    color: Colors.light.textSecondary,
-    lineHeight: 20,
-  },
-  loopStats: {
-    alignItems: 'flex-end',
-  },
-  loopProgress: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: Colors.light.text,
-  },
-  loopTaskCount: {
-    fontSize: 12,
-    color: Colors.light.textSecondary,
-    marginTop: 2,
-  },
-  progressContainer: {
-    marginTop: 8,
-  },
-  progressBackground: {
-    height: 6,
-    backgroundColor: Colors.light.backgroundSecondary,
-    borderRadius: 3,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    borderRadius: 3,
-  },
-  resetInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  resetText: {
-    fontSize: 12,
-    color: Colors.light.textSecondary,
-    marginLeft: 4,
-    textTransform: 'capitalize',
+    color: Colors.light.background,
+    marginLeft: 8,
   },
 });
 
