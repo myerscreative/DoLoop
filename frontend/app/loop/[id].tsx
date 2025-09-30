@@ -595,14 +595,27 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   taskItem: {
-    padding: 16,
+    backgroundColor: 'transparent',
   },
   taskItemCompleted: {
     opacity: 0.7,
   },
+  taskMainRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    padding: 16,
+  },
   taskHeader: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  expandButton: {
+    padding: 12,
+    paddingRight: 16,
   },
   taskRadio: {
     width: 20,
