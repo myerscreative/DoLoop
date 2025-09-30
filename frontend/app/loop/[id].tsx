@@ -202,20 +202,23 @@ const LoopDetailScreen: React.FC = () => {
   const renderTask = (task: Task, index: number) => {
     const isCompleted = task.status === 'completed';
     const isArchived = task.status === 'archived';
+    const isExpanded = expandedTasks.has(task.id);
     
     if (isArchived) return null; // Don't show archived tasks
     
     return (
       <View key={task.id} style={styles.taskContainer}>
-        <TouchableOpacity
-          style={[
-            styles.taskItem,
-            isCompleted && styles.taskItemCompleted
-          ]}
-          onPress={() => !isCompleted && handleCompleteTask(task.id)}
-          disabled={isCompleted}
-        >
-          <View style={styles.taskHeader}>
+        {/* Main Task Row */}
+        <View style={[
+          styles.taskItem,
+          isCompleted && styles.taskItemCompleted
+        ]}>
+          {/* Task Content */}
+          <TouchableOpacity
+            style={styles.taskMainRow}
+            onPress={() => !isCompleted && handleCompleteTask(task.id)}
+            disabled={isCompleted}
+          >
             <View style={[
               styles.taskRadio,
               isCompleted && styles.taskRadioCompleted,
@@ -239,42 +242,56 @@ const LoopDetailScreen: React.FC = () => {
                 <Ionicons name="checkmark-circle" size={14} color={Colors.light.success} />
               )}
             </View>
-          </View>
-        </TouchableOpacity>
-        
-        {/* Task Actions - Similar to your design concept */}
-        <View style={styles.taskActions}>
-          <TaskActionRow 
-            icon="calendar-outline" 
-            label="Add Due Date" 
-            onPress={() => {/* TODO: Implement date picker */}}
-          />
-          <TaskActionRow 
-            icon="person-outline" 
-            label="Assign to" 
-            onPress={() => {/* TODO: Implement user assignment */}}
-          />
-          <TaskActionRow 
-            icon="pricetag-outline" 
-            label="Add Tag" 
-            onPress={() => {/* TODO: Implement tagging */}}
-          />
-          <TaskActionRow 
-            icon="attach-outline" 
-            label="Attach File" 
-            onPress={() => {/* TODO: Implement file attachment */}}
-          />
-          <TaskActionRow 
-            icon="camera-outline" 
-            label="Attach Image" 
-            onPress={() => {/* TODO: Implement image attachment */}}
-          />
-          <TaskActionRow 
-            icon="chatbubble-outline" 
-            label="Add Note" 
-            onPress={() => {/* TODO: Implement note adding */}}
-          />
+          </TouchableOpacity>
+
+          {/* Expand/Collapse Button */}
+          <TouchableOpacity 
+            style={styles.expandButton}
+            onPress={() => toggleTaskExpanded(task.id)}
+          >
+            <Ionicons 
+              name={isExpanded ? "chevron-up" : "chevron-down"} 
+              size={20} 
+              color={Colors.light.textSecondary} 
+            />
+          </TouchableOpacity>
         </View>
+        
+        {/* Task Actions - Only show when expanded */}
+        {isExpanded && (
+          <View style={styles.taskActions}>
+            <TaskActionRow 
+              icon="calendar-outline" 
+              label="Add Due Date" 
+              onPress={() => {/* TODO: Implement date picker */}}
+            />
+            <TaskActionRow 
+              icon="person-outline" 
+              label="Assign to" 
+              onPress={() => {/* TODO: Implement user assignment */}}
+            />
+            <TaskActionRow 
+              icon="pricetag-outline" 
+              label="Add Tag" 
+              onPress={() => {/* TODO: Implement tagging */}}
+            />
+            <TaskActionRow 
+              icon="attach-outline" 
+              label="Attach File" 
+              onPress={() => {/* TODO: Implement file attachment */}}
+            />
+            <TaskActionRow 
+              icon="camera-outline" 
+              label="Attach Image" 
+              onPress={() => {/* TODO: Implement image attachment */}}
+            />
+            <TaskActionRow 
+              icon="chatbubble-outline" 
+              label="Add Note" 
+              onPress={() => {/* TODO: Implement note adding */}}
+            />
+          </View>
+        )}
       </View>
     );
   };
