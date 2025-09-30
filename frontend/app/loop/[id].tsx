@@ -599,6 +599,10 @@ const styles = StyleSheet.create({
   taskItemCompleted: {
     opacity: 0.7,
   },
+  taskMainContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   taskMainRow: {
     flexDirection: 'row',
     alignItems: 'center',
