@@ -116,8 +116,15 @@ const Dashboard: React.FC = () => {
         <Ionicons name="sync" size={16} color={Colors.light.background} />
       </View>
       <Text style={styles.favoriteText}>{loop.name}</Text>
-      <TouchableOpacity style={styles.favoriteAction}>
-        <Ionicons name="add-circle" size={20} color={Colors.light.primary} />
+      <TouchableOpacity 
+        style={styles.favoriteAction}
+        onPress={() => toggleFavorite(loop.id)}
+      >
+        <Ionicons 
+          name={loop.is_favorite ? "heart" : "heart-outline"} 
+          size={20} 
+          color={loop.is_favorite ? Colors.light.secondary : Colors.light.textSecondary} 
+        />
       </TouchableOpacity>
     </TouchableOpacity>
   );
