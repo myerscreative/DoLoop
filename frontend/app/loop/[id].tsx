@@ -1711,6 +1711,65 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  // Date Picker Styles
+  datePickerWrapper: {
+    minHeight: 300,
+    justifyContent: 'center',
+  },
+  dateDisplay: {
+    alignItems: 'center',
+    marginTop: 20,
+    padding: 16,
+    backgroundColor: Colors.light.surface,
+    borderRadius: 12,
+  },
+  dateDisplayText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: Colors.light.text,
+  },
+  // Attachment Modal Styles
+  attachmentItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    backgroundColor: Colors.light.surface,
+    borderRadius: 12,
+    marginBottom: 12,
+  },
+  attachmentInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  attachmentDetails: {
+    marginLeft: 12,
+    flex: 1,
+  },
+  attachmentName: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: Colors.light.text,
+    marginBottom: 4,
+  },
+  attachmentSize: {
+    fontSize: 12,
+    color: Colors.light.textSecondary,
+  },
+  attachmentAction: {
+    padding: 8,
+  },
+  emptyAttachments: {
+    alignItems: 'center',
+    paddingVertical: 60,
+  },
+  emptyAttachmentsText: {
+    fontSize: 16,
+    color: Colors.light.textSecondary,
+    marginTop: 16,
+  },
 });
 
 export default LoopDetailScreen;
