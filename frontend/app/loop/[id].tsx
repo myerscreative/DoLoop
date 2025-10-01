@@ -691,6 +691,12 @@ const styles = StyleSheet.create({
     color: Colors.light.primary,
     marginRight: 8,
   },
+  actionSeparator: {
+    height: 1,
+    backgroundColor: Colors.light.backgroundSecondary,
+    marginVertical: 8,
+    marginHorizontal: 16,
+  },
   addStepButton: {
     flexDirection: 'row',
     alignItems: 'center',
