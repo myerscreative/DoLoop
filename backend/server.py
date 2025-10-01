@@ -460,6 +460,72 @@ async def complete_task(task_id: str, current_user = Depends(get_current_user)):
     
     return {"message": "Task completed"}
 
+@api_router.put("/tasks/{task_id}", response_model=TaskResponse)
+async def update_task(task_id: str, task_data: TaskUpdate, current_user = Depends(get_current_user)):
+    """Update a task"""
+    try:
+        # Find task and verify ownership through loop
+        task = await db.tasks.find_one({"_id": ObjectId(task_id)})
+        if not task:
+            raise HTTPException(status_code=404, detail="Task not found")
+        
+        loop = await db.loops.find_one({"_id": ObjectId(task["loop_id"]), "owner_id": current_user["_id"]})
+        if not loop:
+            raise HTTPException(status_code=404, detail="Loop not found")
+        
+        # Build update data
+        update_data = {"updated_at": datetime.utcnow()}
+        if task_data.description is not None:
+            update_data["description"] = task_data.description
+        if task_data.type is not None:
+            update_data["type"] = task_data.type
+        
+        # Update the task
+        await db.tasks.update_one(
+            {"_id": ObjectId(task_id)},
+            {"$set": update_data}
+        )
+        
+        # Fetch and return updated task
+        updated_task = await db.tasks.find_one({"_id": ObjectId(task_id)})
+        
+        return TaskResponse(
+            id=str(updated_task["_id"]),
+            loop_id=updated_task["loop_id"],
+            description=updated_task["description"],
+            type=updated_task["type"],
+            assigned_user_id=updated_task.get("assigned_user_id"),
+            status=updated_task["status"],
+            completed_at=updated_task.get("completed_at"),
+            created_at=updated_task["created_at"],
+            updated_at=updated_task["updated_at"],
+            order=updated_task["order"]
+        )
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to update task: {str(e)}")
+
+@api_router.delete("/tasks/{task_id}")
+async def delete_task(task_id: str, current_user = Depends(get_current_user)):
+    """Delete a task"""
+    try:
+        # Find task and verify ownership through loop
+        task = await db.tasks.find_one({"_id": ObjectId(task_id)})
+        if not task:
+            raise HTTPException(status_code=404, detail="Task not found")
+        
+        loop = await db.loops.find_one({"_id": ObjectId(task["loop_id"]), "owner_id": current_user["_id"]})
+        if not loop:
+            raise HTTPException(status_code=404, detail="Loop not found")
+        
+        # Delete the task
+        await db.tasks.delete_one({"_id": ObjectId(task_id)})
+        
+        return {"message": "Task deleted successfully"}
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to delete task: {str(e)}")
+
 @api_router.put("/loops/{loop_id}/reloop")
 async def reloop(loop_id: str, current_user = Depends(get_current_user)):
     # Verify loop ownership
