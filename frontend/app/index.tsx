@@ -201,11 +201,19 @@ const Dashboard: React.FC = () => {
         {/* Quick Actions */}
         <View style={styles.quickActions}>
           <TouchableOpacity 
+            style={styles.aiCreateButton}
+            onPress={() => router.push('/ai-create-loop')}
+          >
+            <Ionicons name="sparkles" size={24} color={Colors.light.background} />
+            <Text style={styles.aiCreateButtonText}>Create with AI</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
             style={styles.createButton}
             onPress={() => router.push('/create-loop')}
           >
             <Ionicons name="add" size={24} color={Colors.light.background} />
-            <Text style={styles.createButtonText}>Create New Loop</Text>
+            <Text style={styles.createButtonText}>Create Manually</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
