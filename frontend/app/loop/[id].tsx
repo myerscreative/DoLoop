@@ -822,25 +822,27 @@ const styles = StyleSheet.create({
     minHeight: 56,
   },
   taskTypeContainer: {
-    gap: 12,
+    gap: 16,
   },
   taskTypeOption: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: Colors.light.surface,
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: 16,
+    padding: 20,
     borderWidth: 2,
     borderColor: 'transparent',
+    minHeight: 64,
   },
   taskTypeOptionSelected: {
     backgroundColor: Colors.light.backgroundSecondary,
+    borderColor: Colors.light.primary,
   },
   taskTypeText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '500',
     color: Colors.light.text,
-    marginLeft: 12,
+    marginLeft: 16,
   },
 });
 
