@@ -639,129 +639,103 @@ const LoopDetailScreen: React.FC = () => {
   const renderTask = (task: Task, index: number) => {
     const isCompleted = task.status === 'completed';
     const isArchived = task.status === 'archived';
-    const isExpanded = expandedTasks.has(task.id);
-    const taskDetails = renderTaskDetails(task);
     
     if (isArchived) return null; // Don't show archived tasks
     
+    // Generate visual indicators based on task metadata
+    const indicators = [];
+    
+    if (task.assigned_email) {
+      indicators.push(
+        <Ionicons key="person" name="person" size={16} color={Colors.light.textSecondary} />
+      );
+    }
+    
+    if (task.type === 'recurring') {
+      indicators.push(
+        <Ionicons key="refresh" name="refresh" size={16} color={Colors.light.textSecondary} />
+      );
+    }
+    
+    if (task.attachments && task.attachments.length > 0) {
+      // Show different icon based on attachment type
+      const hasImages = task.attachments.some(att => att.type === 'image');
+      indicators.push(
+        <Ionicons 
+          key="attachment" 
+          name={hasImages ? "camera" : "attach"} 
+          size={16} 
+          color={Colors.light.textSecondary} 
+        />
+      );
+    }
+    
+    if (task.notes) {
+      indicators.push(
+        <Ionicons key="note" name="chatbubble" size={16} color={Colors.light.textSecondary} />
+      );
+    }
+    
+    if (task.due_date) {
+      indicators.push(
+        <Ionicons key="calendar" name="calendar" size={16} color={Colors.light.textSecondary} />
+      );
+    }
+    
+    if (task.tags && task.tags.length > 0) {
+      indicators.push(
+        <Ionicons key="tag" name="pricetag" size={16} color={Colors.light.textSecondary} />
+      );
+    }
+    
     return (
-      <View key={task.id} style={styles.taskContainer}>
-        {/* Main Task Row */}
-        <View style={styles.taskItem}>
-          <View style={styles.taskMainContent}>
-            {/* Task Content */}
-            <TouchableOpacity
-              style={styles.taskMainRow}
-              onPress={() => !isCompleted && handleCompleteTask(task.id)}
-              disabled={isCompleted}
-            >
-              <View style={[
-                styles.taskRadio,
-                isCompleted && styles.taskRadioCompleted,
-                { borderColor: loop?.color || Colors.light.primary }
-              ]}>
-                {isCompleted && (
-                  <View style={[styles.taskRadioFill, { backgroundColor: loop?.color || Colors.light.primary }]} />
-                )}
-              </View>
-              <View style={styles.taskContent}>
-                <Text style={[
-                  styles.taskText,
-                  isCompleted && styles.taskTextCompleted
-                ]}>
-                  {task.description}
-                </Text>
-                {taskDetails.length > 0 && (
-                  <View style={styles.taskDetailsContainer}>
-                    {taskDetails.map((detail, idx) => (
-                      <Text key={idx} style={styles.taskDetail}>{detail}</Text>
-                    ))}
-                  </View>
-                )}
-              </View>
-              <View style={styles.taskIcons}>
-                {task.type === 'recurring' && (
-                  <Ionicons name="refresh" size={14} color={Colors.light.textSecondary} />
-                )}
-                {isCompleted && (
-                  <Ionicons name="checkmark-circle" size={14} color={Colors.light.success} />
-                )}
-              </View>
-            </TouchableOpacity>
-
-            {/* Expand/Collapse Button */}
-            <TouchableOpacity 
-              style={styles.expandButton}
-              onPress={() => toggleTaskExpanded(task.id)}
-            >
-              <Ionicons 
-                name={isExpanded ? "chevron-up" : "chevron-down"} 
-                size={20} 
-                color={Colors.light.textSecondary} 
-              />
-            </TouchableOpacity>
-          </View>
+      <TouchableOpacity 
+        key={task.id} 
+        style={styles.cleanTaskItem}
+        onPress={() => handleEditTask(task)}
+        activeOpacity={0.7}
+      >
+        {/* Task Radio Button */}
+        <TouchableOpacity
+          style={[
+            styles.taskRadio,
+            isCompleted && styles.taskRadioCompleted,
+            { borderColor: loop?.color || Colors.light.primary }
+          ]}
+          onPress={() => !isCompleted && handleCompleteTask(task.id)}
+          disabled={isCompleted}
+        >
+          {isCompleted && (
+            <View style={[styles.taskRadioFill, { backgroundColor: loop?.color || Colors.light.primary }]} />
+          )}
+        </TouchableOpacity>
+        
+        {/* Task Content */}
+        <View style={styles.cleanTaskContent}>
+          <Text style={[
+            styles.cleanTaskText,
+            isCompleted && styles.taskTextCompleted
+          ]}>
+            {task.description}
+          </Text>
+          
+          {/* Visual Indicators Row */}
+          {indicators.length > 0 && (
+            <View style={styles.taskIndicators}>
+              {indicators.map((indicator, idx) => (
+                <View key={idx} style={styles.indicatorWrapper}>
+                  {indicator}
+                </View>
+              ))}
+            </View>
+          )}
         </View>
         
-        {/* Task Actions - Only show when expanded */}
-        {isExpanded && (
-          <View style={styles.taskActions}>
-            <TaskActionRow 
-              icon="create-outline" 
-              label="Edit Task" 
-              onPress={() => handleEditTask(task)}
-            />
-            <TaskActionRow 
-              icon="trash-outline" 
-              label="Delete Task" 
-              onPress={() => handleDeleteTask(task.id)}
-              color={Colors.light.error}
-            />
-            <View style={styles.actionSeparator} />
-            <TaskActionRow 
-              icon="calendar-outline" 
-              label="Add Due Date" 
-              onPress={() => handleAddDueDate(task.id)}
-            />
-            <TaskActionRow 
-              icon="person-outline" 
-              label="Assign to" 
-              onPress={() => handleAssignTask(task.id)}
-            />
-            <TaskActionRow 
-              icon="pricetag-outline" 
-              label="Add Tag" 
-              onPress={() => handleAddTag(task.id)}
-            />
-            {task.attachments && task.attachments.length > 0 && (
-              <TaskActionRow 
-                icon="eye-outline" 
-                label="View Attachments" 
-                onPress={() => {
-                  setCurrentAttachments(task.attachments || []);
-                  setShowAttachmentsModal(true);
-                }}
-                value={`${task.attachments.length} file(s)`}
-              />
-            )}
-            <TaskActionRow 
-              icon="attach-outline" 
-              label="Attach File" 
-              onPress={() => handleAttachFile(task.id)}
-            />
-            <TaskActionRow 
-              icon="camera-outline" 
-              label="Attach Image" 
-              onPress={() => handleAttachImage(task.id)}
-            />
-            <TaskActionRow 
-              icon="chatbubble-outline" 
-              label="Add Note" 
-              onPress={() => handleAddNote(task.id)}
-            />
-          </View>
+        {/* Completion Status */}
+        {isCompleted && (
+          <Ionicons name="checkmark-circle" size={20} color={Colors.light.success} />
         )}
-      </View>
+      </TouchableOpacity>
     );
   };
 
