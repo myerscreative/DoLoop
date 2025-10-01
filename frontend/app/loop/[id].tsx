@@ -418,7 +418,7 @@ const LoopDetailScreen: React.FC = () => {
           onPress={() => setShowAddTask(true)}
         >
           <Ionicons name="add" size={20} color={loop.color} />
-          <Text style={[styles.addStepText, { color: loop.color }]}>Add Step</Text>
+          <Text style={[styles.addStepText, { color: loop.color }]}>Add List Item</Text>
         </TouchableOpacity>
       </ScrollView>
 
