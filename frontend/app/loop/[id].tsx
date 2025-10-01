@@ -799,25 +799,27 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     padding: 24,
+    paddingTop: 32,
   },
   inputContainer: {
-    marginBottom: 24,
+    marginBottom: 32,
   },
   inputLabel: {
     fontSize: 16,
     fontWeight: '600',
     color: Colors.light.text,
-    marginBottom: 8,
+    marginBottom: 12,
   },
   input: {
     backgroundColor: Colors.light.surface,
     borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingHorizontal: 20,
+    paddingVertical: 18,
     fontSize: 16,
     color: Colors.light.text,
     borderWidth: 2,
     borderColor: 'transparent',
+    minHeight: 56,
   },
   taskTypeContainer: {
     gap: 12,
