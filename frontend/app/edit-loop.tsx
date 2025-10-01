@@ -206,13 +206,34 @@ const EditLoopScreen: React.FC = () => {
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Edit Loop</Text>
           <TouchableOpacity
-            onPress={handleDelete}
+            onPress={() => {
+              console.log('DELETE BUTTON PRESSED!!!');
+              if (confirm('Delete this loop? This cannot be undone.')) {
+                console.log('User confirmed delete');
+                fetch(`${API_BASE_URL}/api/loops/${id}`, {
+                  method: 'DELETE',
+                  headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                  },
+                }).then(response => {
+                  console.log('Delete response:', response.status);
+                  if (response.ok) {
+                    alert('Loop deleted!');
+                    router.replace('/');
+                  } else {
+                    alert('Delete failed');
+                  }
+                }).catch(error => {
+                  console.error('Delete error:', error);
+                  alert('Delete error: ' + error.message);
+                });
+              }
+            }}
             style={styles.deleteButton}
-            disabled={deleting}
             activeOpacity={0.7}
-            hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
           >
-            <Ionicons name="trash-outline" size={24} color={Colors.light.error} />
+            <Ionicons name="trash-outline" size={24} color="red" />
           </TouchableOpacity>
         </View>
 
