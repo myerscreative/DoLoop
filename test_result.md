@@ -165,6 +165,21 @@ backend:
         agent: "testing"
         comment: "✅ COMPREHENSIVE TESTING PASSED: GET /api/loops/{loop_id}/tasks retrieves tasks with proper ordering, POST /api/loops/{loop_id}/tasks creates both recurring and one-time tasks, PUT /api/tasks/{task_id}/complete marks tasks as completed with timestamp, PUT /api/loops/{loop_id}/reloop resets recurring tasks to pending and archives completed one-time tasks. All endpoints require authentication and verify loop ownership. Task ordering and status management working correctly."
 
+  - task: "Deleted Loops Backend API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented deleted loops functionality with GET /api/loops/deleted, POST /api/loops/{id}/restore, DELETE /api/loops/{id}/permanent endpoints"
+      - working: true
+        agent: "testing"
+        comment: "✅ COMPREHENSIVE TESTING PASSED: All deleted loops endpoints working correctly. GET /api/loops/deleted returns soft-deleted loops with accurate days_remaining calculation (30-day retention). POST /api/loops/{id}/restore successfully restores deleted loops back to active state. DELETE /api/loops/{id}/permanent permanently removes loops and associated tasks. DELETE /api/loops/{id} soft-delete functionality working properly. All endpoints require authentication, handle invalid ObjectIds correctly (404 responses), and properly validate loop ownership. Error handling for non-deleted loops attempting restore/permanent delete works correctly. Fixed ObjectId validation issues that were causing 500 errors - now properly returns 404 for invalid IDs."
+
 frontend:
   - task: "Authentication Screens"
     implemented: false
