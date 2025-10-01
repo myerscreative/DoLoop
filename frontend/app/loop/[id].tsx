@@ -52,6 +52,8 @@ const LoopDetailScreen: React.FC = () => {
   const [taskTags, setTaskTags] = useState<string[]>([]);
   const [showNoteModal, setShowNoteModal] = useState(false);
   const [noteText, setNoteText] = useState('');
+  const [showAttachmentsModal, setShowAttachmentsModal] = useState(false);
+  const [currentAttachments, setCurrentAttachments] = useState<any[]>([]);
 
   const fetchLoopData = async () => {
     if (!id) return;
