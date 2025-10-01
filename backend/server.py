@@ -431,9 +431,15 @@ async def restore_loop(loop_id: str, current_user = Depends(get_current_user)):
 async def permanently_delete_loop(loop_id: str, current_user = Depends(get_current_user)):
     """Permanently delete a loop and all its tasks"""
     try:
+        # Validate ObjectId format
+        try:
+            object_id = ObjectId(loop_id)
+        except:
+            raise HTTPException(status_code=404, detail="Deleted loop not found")
+        
         # Verify loop ownership and that it's already soft-deleted
         loop = await db.loops.find_one({
-            "_id": ObjectId(loop_id), 
+            "_id": object_id, 
             "owner_id": current_user["_id"],
             "is_deleted": True
         })
@@ -444,10 +450,12 @@ async def permanently_delete_loop(loop_id: str, current_user = Depends(get_curre
         await db.tasks.delete_many({"loop_id": loop_id})
         
         # Delete the loop permanently
-        await db.loops.delete_one({"_id": ObjectId(loop_id)})
+        await db.loops.delete_one({"_id": object_id})
         
         return {"message": "Loop permanently deleted"}
         
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to permanently delete loop: {str(e)}")
 
