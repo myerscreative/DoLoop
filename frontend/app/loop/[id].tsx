@@ -379,44 +379,44 @@ const LoopDetailScreen: React.FC = () => {
             <TaskActionRow 
               icon="create-outline" 
               label="Edit Task" 
-              onPress={() => {/* TODO: Implement task edit modal */}}
+              onPress={() => handleEditTask(task)}
             />
             <TaskActionRow 
               icon="trash-outline" 
               label="Delete Task" 
-              onPress={() => {/* TODO: Implement task delete with confirmation */}}
+              onPress={() => handleDeleteTask(task.id)}
               color={Colors.light.error}
             />
             <View style={styles.actionSeparator} />
             <TaskActionRow 
               icon="calendar-outline" 
               label="Add Due Date" 
-              onPress={() => {/* TODO: Implement date picker */}}
+              onPress={() => handleAddDueDate(task.id)}
             />
             <TaskActionRow 
               icon="person-outline" 
               label="Assign to" 
-              onPress={() => {/* TODO: Implement user assignment */}}
+              onPress={() => handleAssignTask(task.id)}
             />
             <TaskActionRow 
               icon="pricetag-outline" 
               label="Add Tag" 
-              onPress={() => {/* TODO: Implement tagging */}}
+              onPress={() => handleAddTag(task.id)}
             />
             <TaskActionRow 
               icon="attach-outline" 
               label="Attach File" 
-              onPress={() => {/* TODO: Implement file attachment */}}
+              onPress={() => handleAttachFile(task.id)}
             />
             <TaskActionRow 
               icon="camera-outline" 
               label="Attach Image" 
-              onPress={() => {/* TODO: Implement image attachment */}}
+              onPress={() => handleAttachImage(task.id)}
             />
             <TaskActionRow 
               icon="chatbubble-outline" 
               label="Add Note" 
-              onPress={() => {/* TODO: Implement note adding */}}
+              onPress={() => handleAddNote(task.id)}
             />
           </View>
         )}
