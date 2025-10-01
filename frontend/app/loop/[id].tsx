@@ -620,7 +620,7 @@ const LoopDetailScreen: React.FC = () => {
     }
     
     if (task.attachments && task.attachments.length > 0) {
-      details.push(`Attachments: ${task.attachments.length} file(s)`);
+      details.push(`📎 ${task.attachments.length} file(s)`);
     }
     
     return details;
