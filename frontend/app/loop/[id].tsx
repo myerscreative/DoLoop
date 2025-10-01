@@ -746,25 +746,45 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingHorizontal: 20,
+    paddingVertical: 20,
     borderBottomWidth: 1,
     borderBottomColor: Colors.light.backgroundSecondary,
+    backgroundColor: Colors.light.background,
   },
   modalCloseButton: {
-    padding: 8,
+    padding: 12,
+    minWidth: 70,
   },
   modalCloseText: {
     fontSize: 16,
     color: Colors.light.textSecondary,
+    fontWeight: '400',
+  },
+  modalTitleContainer: {
+    alignItems: 'center',
+    flex: 1,
+    paddingHorizontal: 16,
   },
   modalTitle: {
     fontSize: 18,
     fontWeight: '600',
     color: Colors.light.text,
+    textAlign: 'center',
+  },
+  modalSubtitle: {
+    fontSize: 14,
+    fontWeight: '400',
+    color: Colors.light.textSecondary,
+    textAlign: 'center',
+    marginTop: 2,
   },
   modalSaveButton: {
-    padding: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    borderRadius: 20,
+    minWidth: 70,
+    alignItems: 'center',
   },
   modalSaveButtonDisabled: {
     opacity: 0.5,
@@ -772,7 +792,7 @@ const styles = StyleSheet.create({
   modalSaveText: {
     fontSize: 16,
     fontWeight: '600',
-    color: Colors.light.primary,
+    color: Colors.light.background,
   },
   modalSaveTextDisabled: {
     color: Colors.light.textSecondary,
