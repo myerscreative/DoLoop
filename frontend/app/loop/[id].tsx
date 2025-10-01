@@ -1062,14 +1062,25 @@ const LoopDetailScreen: React.FC = () => {
           </View>
           
           <View style={styles.modalContent}>
-            <DateTimePicker
-              value={selectedDate}
-              mode="date"
-              display="default"
-              onChange={handleDueDateChange}
-              minimumDate={new Date()}
-              style={styles.datePicker}
-            />
+            <View style={styles.datePickerWrapper}>
+              <DateTimePicker
+                value={selectedDate}
+                mode="date"
+                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                onChange={handleDueDateChange}
+                minimumDate={new Date()}
+                style={styles.datePicker}
+                textColor={Colors.light.text}
+              />
+              
+              {Platform.OS === 'android' && (
+                <View style={styles.dateDisplay}>
+                  <Text style={styles.dateDisplayText}>
+                    Selected Date: {selectedDate.toLocaleDateString()}
+                  </Text>
+                </View>
+              )}
+            </View>
           </View>
         </SafeAreaView>
       </Modal>
