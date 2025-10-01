@@ -260,6 +260,18 @@ const LoopDetailScreen: React.FC = () => {
         {isExpanded && (
           <View style={styles.taskActions}>
             <TaskActionRow 
+              icon="create-outline" 
+              label="Edit Task" 
+              onPress={() => {/* TODO: Implement task edit modal */}}
+            />
+            <TaskActionRow 
+              icon="trash-outline" 
+              label="Delete Task" 
+              onPress={() => {/* TODO: Implement task delete with confirmation */}}
+              color={Colors.light.error}
+            />
+            <View style={styles.actionSeparator} />
+            <TaskActionRow 
               icon="calendar-outline" 
               label="Add Due Date" 
               onPress={() => {/* TODO: Implement date picker */}}
