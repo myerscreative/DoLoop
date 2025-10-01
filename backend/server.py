@@ -141,6 +141,11 @@ class LoopUpdate(BaseModel):
 class TaskUpdate(BaseModel):
     description: Optional[str] = None
     type: Optional[str] = Field(None, pattern="^(recurring|one-time)$")
+    assigned_email: Optional[str] = None
+    due_date: Optional[datetime] = None
+    tags: Optional[List[str]] = None
+    notes: Optional[str] = None
+    attachments: Optional[List[dict]] = None
 
 # AI Helper Functions
 async def get_ai_chat():
