@@ -350,24 +350,130 @@ async def update_loop(loop_id: str, loop_data: LoopUpdate, current_user = Depend
         raise HTTPException(status_code=500, detail=f"Failed to update loop: {str(e)}")
 
 @api_router.delete("/loops/{loop_id}")
-async def delete_loop(loop_id: str, current_user = Depends(get_current_user)):
-    """Delete a loop and all its tasks"""
+async def soft_delete_loop(loop_id: str, current_user = Depends(get_current_user)):
+    """Soft delete a loop (move to deleted state for 30 days)"""
     try:
         # Verify loop ownership
         loop = await db.loops.find_one({"_id": ObjectId(loop_id), "owner_id": current_user["_id"]})
         if not loop:
             raise HTTPException(status_code=404, detail="Loop not found")
         
-        # Delete all tasks in the loop first
-        await db.tasks.delete_many({"loop_id": loop_id})
+        # Mark as deleted with timestamp
+        await db.loops.update_one(
+            {"_id": ObjectId(loop_id)},
+            {
+                "$set": {
+                    "is_deleted": True,
+                    "deleted_at": datetime.utcnow(),
+                    "updated_at": datetime.utcnow()
+                }
+            }
+        )
         
-        # Delete the loop
-        await db.loops.delete_one({"_id": ObjectId(loop_id)})
-        
-        return {"message": "Loop and all its tasks deleted successfully"}
+        return {"message": "Loop moved to deleted items"}
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to delete loop: {str(e)}")
+
+@api_router.post("/loops/{loop_id}/restore")
+async def restore_loop(loop_id: str, current_user = Depends(get_current_user)):
+    """Restore a soft-deleted loop"""
+    try:
+        # Verify loop ownership and that it's deleted
+        loop = await db.loops.find_one({
+            "_id": ObjectId(loop_id), 
+            "owner_id": current_user["_id"],
+            "is_deleted": True
+        })
+        if not loop:
+            raise HTTPException(status_code=404, detail="Deleted loop not found")
+        
+        # Restore the loop
+        await db.loops.update_one(
+            {"_id": ObjectId(loop_id)},
+            {
+                "$unset": {
+                    "is_deleted": "",
+                    "deleted_at": ""
+                },
+                "$set": {
+                    "updated_at": datetime.utcnow()
+                }
+            }
+        )
+        
+        return {"message": "Loop restored successfully"}
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to restore loop: {str(e)}")
+
+@api_router.delete("/loops/{loop_id}/permanent")
+async def permanently_delete_loop(loop_id: str, current_user = Depends(get_current_user)):
+    """Permanently delete a loop and all its tasks"""
+    try:
+        # Verify loop ownership and that it's already soft-deleted
+        loop = await db.loops.find_one({
+            "_id": ObjectId(loop_id), 
+            "owner_id": current_user["_id"],
+            "is_deleted": True
+        })
+        if not loop:
+            raise HTTPException(status_code=404, detail="Deleted loop not found")
+        
+        # Delete all tasks in the loop first
+        await db.tasks.delete_many({"loop_id": loop_id})
+        
+        # Delete the loop permanently
+        await db.loops.delete_one({"_id": ObjectId(loop_id)})
+        
+        return {"message": "Loop permanently deleted"}
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to permanently delete loop: {str(e)}")
+
+@api_router.get("/loops/deleted")
+async def get_deleted_loops(current_user = Depends(get_current_user)):
+    """Get all soft-deleted loops for the current user"""
+    try:
+        # Get deleted loops that are less than 30 days old
+        thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+        
+        loops = await db.loops.find({
+            "owner_id": current_user["_id"],
+            "is_deleted": True,
+            "deleted_at": {"$gte": thirty_days_ago}
+        }).to_list(1000)
+        
+        # Auto-cleanup loops older than 30 days
+        await db.loops.delete_many({
+            "owner_id": current_user["_id"],
+            "is_deleted": True,
+            "deleted_at": {"$lt": thirty_days_ago}
+        })
+        
+        # Format response
+        result = []
+        for loop in loops:
+            # Calculate days remaining
+            days_since_deleted = (datetime.utcnow() - loop["deleted_at"]).days
+            days_remaining = 30 - days_since_deleted
+            
+            loop_response = {
+                "id": str(loop["_id"]),
+                "name": loop["name"],
+                "description": loop.get("description"),
+                "color": loop["color"],
+                "owner_id": str(loop["owner_id"]),
+                "reset_rule": loop["reset_rule"],
+                "deleted_at": loop["deleted_at"],
+                "days_remaining": max(0, days_remaining)
+            }
+            result.append(loop_response)
+        
+        return result
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get deleted loops: {str(e)}")
 
 # Task Routes
 @api_router.get("/loops/{loop_id}/tasks", response_model=List[TaskResponse])
