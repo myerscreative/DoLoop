@@ -307,6 +307,11 @@ const Dashboard: React.FC = () => {
             <MyLoopItem title="Important" icon="flag" count={2} category="important" />
             <MyLoopItem title="Planned" icon="calendar" count={5} category="planned" />
             <MyLoopItem title="Assigned to me" icon="person" count={1} category="assigned" />
+            <MyLoopItem 
+              title="Deleted Loops" 
+              icon="trash-outline" 
+              onPress={() => router.push('/deleted-loops')}
+            />
           </View>
         </View>
 
