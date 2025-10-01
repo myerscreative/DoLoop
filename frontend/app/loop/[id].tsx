@@ -1969,11 +1969,32 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
+  cleanTaskContainer: {
+    marginBottom: 8,
+  },
   indicatorWrapper: {
     backgroundColor: Colors.light.backgroundSecondary,
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 10,
+  },
+  indicatorButton: {
+    backgroundColor: Colors.light.backgroundSecondary,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 10,
+  },
+  quickActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+    gap: 8,
+  },
+  quickActionButton: {
+    padding: 8,
+    backgroundColor: Colors.light.backgroundSecondary,
+    borderRadius: 20,
   },
 });
 
