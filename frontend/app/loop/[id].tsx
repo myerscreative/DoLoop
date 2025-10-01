@@ -9,6 +9,8 @@ import {
   RefreshControl,
   TextInput,
   Modal,
+  Alert,
+  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
@@ -17,6 +19,9 @@ import { Loop, Task } from '../../types';
 import Constants from 'expo-constants';
 import { router, useLocalSearchParams } from 'expo-router';
 import { showMessage } from 'react-native-flash-message';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import * as DocumentPicker from 'expo-document-picker';
+import * as ImagePicker from 'expo-image-picker';
 
 const API_BASE_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || '';
 
@@ -35,6 +40,17 @@ const LoopDetailScreen: React.FC = () => {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [editTaskText, setEditTaskText] = useState('');
   const [showEditTask, setShowEditTask] = useState(false);
+  
+  // Modal states
+  const [showDueDatePicker, setShowDueDatePicker] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [currentTaskId, setCurrentTaskId] = useState<string>('');
+  const [showAssignModal, setShowAssignModal] = useState(false);
+  const [assignEmail, setAssignEmail] = useState('');
+  const [showTagModal, setShowTagModal] = useState(false);
+  const [newTag, setNewTag] = useState('');
+  const [showNoteModal, setShowNoteModal] = useState(false);
+  const [noteText, setNoteText] = useState('');
 
   const fetchLoopData = async () => {
     if (!id) return;
@@ -213,78 +229,303 @@ const LoopDetailScreen: React.FC = () => {
   };
 
   const handleDeleteTask = async (taskId: string) => {
-    if (!confirm('Delete this task? This action cannot be undone.')) return;
+    Alert.alert(
+      'Delete Task',
+      'Are you sure you want to delete this task? This action cannot be undone.',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const response = await fetch(`${API_BASE_URL}/api/tasks/${taskId}`, {
+                method: 'DELETE',
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'application/json',
+                },
+              });
+
+              if (response.ok) {
+                fetchLoopData();
+                showMessage({
+                  message: 'Task deleted successfully!',
+                  type: 'success',
+                });
+              }
+            } catch (error) {
+              showMessage({
+                message: 'Failed to delete task',
+                type: 'danger',
+              });
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  // Real functionality implementations
+  const handleAddDueDate = (taskId: string) => {
+    setCurrentTaskId(taskId);
+    setShowDueDatePicker(true);
+  };
+
+  const handleDueDateChange = async (event: any, selectedDate?: Date) => {
+    if (Platform.OS === 'android') {
+      setShowDueDatePicker(false);
+    }
+    
+    if (selectedDate && currentTaskId) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/tasks/${currentTaskId}`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            due_date: selectedDate.toISOString(),
+          }),
+        });
+
+        if (response.ok) {
+          fetchLoopData();
+          showMessage({
+            message: 'Due date added successfully!',
+            type: 'success',
+          });
+        }
+      } catch (error) {
+        showMessage({
+          message: 'Failed to add due date',
+          type: 'danger',
+        });
+      }
+      
+      if (Platform.OS === 'ios') {
+        setShowDueDatePicker(false);
+      }
+    }
+  };
+
+  const handleAssignTask = (taskId: string) => {
+    setCurrentTaskId(taskId);
+    setShowAssignModal(true);
+  };
+
+  const handleAssignSubmit = async () => {
+    if (!assignEmail.trim() || !currentTaskId) return;
     
     try {
-      const response = await fetch(`${API_BASE_URL}/api/tasks/${taskId}`, {
-        method: 'DELETE',
+      const response = await fetch(`${API_BASE_URL}/api/tasks/${currentTaskId}`, {
+        method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify({
+          assigned_email: assignEmail.trim(),
+        }),
       });
 
       if (response.ok) {
+        setShowAssignModal(false);
+        setAssignEmail('');
         fetchLoopData();
         showMessage({
-          message: 'Task deleted successfully!',
+          message: 'Task assigned successfully!',
           type: 'success',
         });
       }
     } catch (error) {
       showMessage({
-        message: 'Failed to delete task',
+        message: 'Failed to assign task',
+        type: 'danger',
+      });
+    }
+  };
+
+  const handleAddTag = (taskId: string) => {
+    setCurrentTaskId(taskId);
+    setShowTagModal(true);
+  };
+
+  const handleTagSubmit = async () => {
+    if (!newTag.trim() || !currentTaskId) return;
+    
+    const task = tasks.find(t => t.id === currentTaskId);
+    const currentTags = task?.tags || [];
+    const updatedTags = [...currentTags, newTag.trim()];
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/tasks/${currentTaskId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          tags: updatedTags,
+        }),
+      });
+
+      if (response.ok) {
+        setShowTagModal(false);
+        setNewTag('');
+        fetchLoopData();
+        showMessage({
+          message: 'Tag added successfully!',
+          type: 'success',
+        });
+      }
+    } catch (error) {
+      showMessage({
+        message: 'Failed to add tag',
         type: 'danger',
       });
     }
   };
 
   const handleAddNote = (taskId: string) => {
-    const note = prompt('Add a note for this task:');
-    if (note) {
+    const task = tasks.find(t => t.id === taskId);
+    setCurrentTaskId(taskId);
+    setNoteText(task?.notes || '');
+    setShowNoteModal(true);
+  };
+
+  const handleNoteSubmit = async () => {
+    if (!currentTaskId) return;
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/tasks/${currentTaskId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          notes: noteText,
+        }),
+      });
+
+      if (response.ok) {
+        setShowNoteModal(false);
+        setNoteText('');
+        fetchLoopData();
+        showMessage({
+          message: 'Note saved successfully!',
+          type: 'success',
+        });
+      }
+    } catch (error) {
       showMessage({
-        message: `Note added: "${note}"`,
-        type: 'success',
+        message: 'Failed to save note',
+        type: 'danger',
       });
     }
   };
 
-  const handleAddDueDate = (taskId: string) => {
-    showMessage({
-      message: 'Due date feature coming soon!',
-      type: 'info',
-    });
-  };
+  const handleAttachFile = async (taskId: string) => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: '*/*',
+        copyToCacheDirectory: true,
+      });
 
-  const handleAssignTask = (taskId: string) => {
-    showMessage({
-      message: 'Task assignment feature coming soon!',
-      type: 'info',
-    });
-  };
+      if (!result.canceled && result.assets[0]) {
+        const file = result.assets[0];
+        const task = tasks.find(t => t.id === taskId);
+        const currentAttachments = task?.attachments || [];
+        const newAttachment = {
+          type: 'file',
+          name: file.name,
+          uri: file.uri,
+          size: file.size,
+          mimeType: file.mimeType,
+        };
+        
+        const updatedAttachments = [...currentAttachments, newAttachment];
+        
+        const response = await fetch(`${API_BASE_URL}/api/tasks/${taskId}`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            attachments: updatedAttachments,
+          }),
+        });
 
-  const handleAddTag = (taskId: string) => {
-    const tag = prompt('Add a tag for this task:');
-    if (tag) {
+        if (response.ok) {
+          fetchLoopData();
+          showMessage({
+            message: 'File attached successfully!',
+            type: 'success',
+          });
+        }
+      }
+    } catch (error) {
       showMessage({
-        message: `Tag added: "${tag}"`,
-        type: 'success',
+        message: 'Failed to attach file',
+        type: 'danger',
       });
     }
   };
 
-  const handleAttachFile = (taskId: string) => {
-    showMessage({
-      message: 'File attachment feature coming soon!',
-      type: 'info',
-    });
-  };
+  const handleAttachImage = async (taskId: string) => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1,
+      });
 
-  const handleAttachImage = (taskId: string) => {
-    showMessage({
-      message: 'Image attachment feature coming soon!',
-      type: 'info',
-    });
+      if (!result.canceled && result.assets[0]) {
+        const image = result.assets[0];
+        const task = tasks.find(t => t.id === taskId);
+        const currentAttachments = task?.attachments || [];
+        const newAttachment = {
+          type: 'image',
+          name: `image_${Date.now()}.jpg`,
+          uri: image.uri,
+          width: image.width,
+          height: image.height,
+        };
+        
+        const updatedAttachments = [...currentAttachments, newAttachment];
+        
+        const response = await fetch(`${API_BASE_URL}/api/tasks/${taskId}`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            attachments: updatedAttachments,
+          }),
+        });
+
+        if (response.ok) {
+          fetchLoopData();
+          showMessage({
+            message: 'Image attached successfully!',
+            type: 'success',
+          });
+        }
+      }
+    } catch (error) {
+      showMessage({
+        message: 'Failed to attach image',
+        type: 'danger',
+      });
+    }
   };
 
   const toggleTaskExpanded = (taskId: string) => {
@@ -316,10 +557,38 @@ const LoopDetailScreen: React.FC = () => {
     </TouchableOpacity>
   );
 
+  const renderTaskDetails = (task: Task) => {
+    const details = [];
+    
+    if (task.assigned_email) {
+      details.push(`Assigned to: ${task.assigned_email}`);
+    }
+    
+    if (task.due_date) {
+      const dueDate = new Date(task.due_date);
+      details.push(`Due: ${dueDate.toLocaleDateString()}`);
+    }
+    
+    if (task.tags && task.tags.length > 0) {
+      details.push(`Tags: ${task.tags.join(', ')}`);
+    }
+    
+    if (task.notes) {
+      details.push(`Note: ${task.notes}`);
+    }
+    
+    if (task.attachments && task.attachments.length > 0) {
+      details.push(`Attachments: ${task.attachments.length} file(s)`);
+    }
+    
+    return details;
+  };
+
   const renderTask = (task: Task, index: number) => {
     const isCompleted = task.status === 'completed';
     const isArchived = task.status === 'archived';
     const isExpanded = expandedTasks.has(task.id);
+    const taskDetails = renderTaskDetails(task);
     
     if (isArchived) return null; // Don't show archived tasks
     
@@ -343,12 +612,21 @@ const LoopDetailScreen: React.FC = () => {
                   <View style={[styles.taskRadioFill, { backgroundColor: loop?.color || Colors.light.primary }]} />
                 )}
               </View>
-              <Text style={[
-                styles.taskText,
-                isCompleted && styles.taskTextCompleted
-              ]}>
-                {task.description}
-              </Text>
+              <View style={styles.taskContent}>
+                <Text style={[
+                  styles.taskText,
+                  isCompleted && styles.taskTextCompleted
+                ]}>
+                  {task.description}
+                </Text>
+                {taskDetails.length > 0 && (
+                  <View style={styles.taskDetailsContainer}>
+                    {taskDetails.map((detail, idx) => (
+                      <Text key={idx} style={styles.taskDetail}>{detail}</Text>
+                    ))}
+                  </View>
+                )}
+              </View>
               <View style={styles.taskIcons}>
                 {task.type === 'recurring' && (
                   <Ionicons name="refresh" size={14} color={Colors.light.textSecondary} />
@@ -473,22 +751,43 @@ const LoopDetailScreen: React.FC = () => {
         
         <TouchableOpacity 
           onPress={() => {
-            if (confirm('Delete this loop? This cannot be undone.')) {
-              fetch(`${API_BASE_URL}/api/loops/${id}`, {
-                method: 'DELETE',
-                headers: {
-                  'Authorization': `Bearer ${token}`,
-                  'Content-Type': 'application/json',
-                },
-              }).then(response => {
-                if (response.ok) {
-                  alert('Loop deleted!');
-                  router.replace('/');
-                } else {
-                  alert('Delete failed');
+            Alert.alert(
+              'Delete Loop',
+              'Are you sure you want to delete this loop? This action cannot be undone.',
+              [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                  text: 'Delete',
+                  style: 'destructive',
+                  onPress: async () => {
+                    try {
+                      const response = await fetch(`${API_BASE_URL}/api/loops/${id}`, {
+                        method: 'DELETE',
+                        headers: {
+                          'Authorization': `Bearer ${token}`,
+                          'Content-Type': 'application/json',
+                        },
+                      });
+                      
+                      if (response.ok) {
+                        showMessage({
+                          message: 'Loop deleted successfully!',
+                          type: 'success',
+                        });
+                        router.replace('/');
+                      } else {
+                        throw new Error('Delete failed');
+                      }
+                    } catch (error) {
+                      showMessage({
+                        message: 'Failed to delete loop',
+                        type: 'danger',
+                      });
+                    }
+                  }
                 }
-              });
-            }
+              ]
+            );
           }}
           style={styles.headerAction}
         >
@@ -679,6 +978,157 @@ const LoopDetailScreen: React.FC = () => {
           </View>
         </SafeAreaView>
       </Modal>
+
+      {/* Due Date Picker Modal */}
+      {showDueDatePicker && (
+        <Modal visible={showDueDatePicker} animationType="slide" transparent={true}>
+          <View style={styles.modalOverlay}>
+            <View style={styles.datePickerContainer}>
+              <View style={styles.datePickerHeader}>
+                <TouchableOpacity onPress={() => setShowDueDatePicker(false)}>
+                  <Text style={styles.modalCloseText}>Cancel</Text>
+                </TouchableOpacity>
+                <Text style={styles.datePickerTitle}>Select Due Date</Text>
+                <TouchableOpacity onPress={() => handleDueDateChange(null, selectedDate)}>
+                  <Text style={styles.modalSaveText}>Done</Text>
+                </TouchableOpacity>
+              </View>
+              <DateTimePicker
+                value={selectedDate}
+                mode="date"
+                display="spinner"
+                onChange={handleDueDateChange}
+                style={styles.datePicker}
+              />
+            </View>
+          </View>
+        </Modal>
+      )}
+
+      {/* Assign Modal */}
+      <Modal visible={showAssignModal} animationType="slide" presentationStyle="pageSheet">
+        <SafeAreaView style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <TouchableOpacity onPress={() => setShowAssignModal(false)} style={styles.modalCloseButton}>
+              <Text style={styles.modalCloseText}>Cancel</Text>
+            </TouchableOpacity>
+            <View style={styles.modalTitleContainer}>
+              <Text style={styles.modalTitle}>Assign Task</Text>
+            </View>
+            <TouchableOpacity 
+              onPress={handleAssignSubmit}
+              disabled={!assignEmail.trim()}
+              style={[
+                styles.modalSaveButton, 
+                { backgroundColor: loop?.color || Colors.light.primary },
+                !assignEmail.trim() && styles.modalSaveButtonDisabled
+              ]}
+            >
+              <Text style={[styles.modalSaveText, !assignEmail.trim() && styles.modalSaveTextDisabled]}>
+                Assign
+              </Text>
+            </TouchableOpacity>
+          </View>
+          
+          <View style={styles.modalContent}>
+            <View style={styles.inputContainer}>
+              <Text style={styles.inputLabel}>Email Address</Text>
+              <TextInput
+                style={styles.input}
+                value={assignEmail}
+                onChangeText={setAssignEmail}
+                placeholder="Enter email address"
+                placeholderTextColor={Colors.light.textSecondary}
+                autoFocus
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+            </View>
+          </View>
+        </SafeAreaView>
+      </Modal>
+
+      {/* Tag Modal */}
+      <Modal visible={showTagModal} animationType="slide" presentationStyle="pageSheet">
+        <SafeAreaView style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <TouchableOpacity onPress={() => setShowTagModal(false)} style={styles.modalCloseButton}>
+              <Text style={styles.modalCloseText}>Cancel</Text>
+            </TouchableOpacity>
+            <View style={styles.modalTitleContainer}>
+              <Text style={styles.modalTitle}>Add Tag</Text>
+            </View>
+            <TouchableOpacity 
+              onPress={handleTagSubmit}
+              disabled={!newTag.trim()}
+              style={[
+                styles.modalSaveButton, 
+                { backgroundColor: loop?.color || Colors.light.primary },
+                !newTag.trim() && styles.modalSaveButtonDisabled
+              ]}
+            >
+              <Text style={[styles.modalSaveText, !newTag.trim() && styles.modalSaveTextDisabled]}>
+                Add
+              </Text>
+            </TouchableOpacity>
+          </View>
+          
+          <View style={styles.modalContent}>
+            <View style={styles.inputContainer}>
+              <Text style={styles.inputLabel}>Tag Name</Text>
+              <TextInput
+                style={styles.input}
+                value={newTag}
+                onChangeText={setNewTag}
+                placeholder="Enter tag name"
+                placeholderTextColor={Colors.light.textSecondary}
+                autoFocus
+                maxLength={50}
+              />
+            </View>
+          </View>
+        </SafeAreaView>
+      </Modal>
+
+      {/* Note Modal */}
+      <Modal visible={showNoteModal} animationType="slide" presentationStyle="pageSheet">
+        <SafeAreaView style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <TouchableOpacity onPress={() => setShowNoteModal(false)} style={styles.modalCloseButton}>
+              <Text style={styles.modalCloseText}>Cancel</Text>
+            </TouchableOpacity>
+            <View style={styles.modalTitleContainer}>
+              <Text style={styles.modalTitle}>Add Note</Text>
+            </View>
+            <TouchableOpacity 
+              onPress={handleNoteSubmit}
+              style={[
+                styles.modalSaveButton, 
+                { backgroundColor: loop?.color || Colors.light.primary }
+              ]}
+            >
+              <Text style={styles.modalSaveText}>Save</Text>
+            </TouchableOpacity>
+          </View>
+          
+          <View style={styles.modalContent}>
+            <View style={styles.inputContainer}>
+              <Text style={styles.inputLabel}>Note</Text>
+              <TextInput
+                style={[styles.input, styles.textArea]}
+                value={noteText}
+                onChangeText={setNoteText}
+                placeholder="Enter note..."
+                placeholderTextColor={Colors.light.textSecondary}
+                autoFocus
+                multiline
+                numberOfLines={4}
+                maxLength={500}
+              />
+            </View>
+          </View>
+        </SafeAreaView>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -815,9 +1265,21 @@ const styles = StyleSheet.create({
   },
   taskMainRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     flex: 1,
     padding: 16,
+  },
+  taskContent: {
+    flex: 1,
+    marginHorizontal: 12,
+  },
+  taskDetailsContainer: {
+    marginTop: 8,
+  },
+  taskDetail: {
+    fontSize: 12,
+    color: Colors.light.textSecondary,
+    marginBottom: 2,
   },
   taskHeader: {
     flexDirection: 'row',
@@ -837,7 +1299,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginTop: 2,
   },
   taskRadioCompleted: {
     backgroundColor: Colors.light.backgroundSecondary,
@@ -848,9 +1310,9 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   taskText: {
-    flex: 1,
     fontSize: 16,
     color: Colors.light.text,
+    lineHeight: 22,
   },
   taskTextCompleted: {
     textDecorationLine: 'line-through',
@@ -859,6 +1321,7 @@ const styles = StyleSheet.create({
   taskIcons: {
     flexDirection: 'row',
     gap: 4,
+    marginTop: 2,
   },
   taskActions: {
     borderTopWidth: 1,
@@ -908,6 +1371,11 @@ const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
     backgroundColor: Colors.light.background,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
   },
   modalHeader: {
     flexDirection: 'row',
@@ -988,6 +1456,10 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
     minHeight: 56,
   },
+  textArea: {
+    minHeight: 120,
+    textAlignVertical: 'top',
+  },
   taskTypeContainer: {
     gap: 16,
   },
@@ -1010,6 +1482,29 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: Colors.light.text,
     marginLeft: 16,
+  },
+  datePickerContainer: {
+    backgroundColor: Colors.light.background,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingBottom: 20,
+  },
+  datePickerHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.light.backgroundSecondary,
+  },
+  datePickerTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: Colors.light.text,
+  },
+  datePicker: {
+    height: 200,
   },
 });
 
