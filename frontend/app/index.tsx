@@ -164,9 +164,8 @@ const Dashboard: React.FC = () => {
           )}
         </View>
 
-        {/* My Loops Section */}
+        {/* My Loops Items */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>My Loops</Text>
           <View style={styles.myLoopsList}>
             <MyLoopItem title="My Day" icon="today" count={3} category="my-day" />
             <MyLoopItem title="Important" icon="flag" count={2} category="important" />
