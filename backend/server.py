@@ -119,6 +119,9 @@ class AISuggestTasksRequest(BaseModel):
 class AIOptimizeLoopRequest(BaseModel):
     loop_id: str
 
+class FavoriteToggleRequest(BaseModel):
+    loop_id: str
+
 # AI Helper Functions
 async def get_ai_chat():
     """Initialize AI chat with system message for Doloop context"""
