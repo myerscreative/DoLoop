@@ -689,53 +689,177 @@ const LoopDetailScreen: React.FC = () => {
     }
     
     return (
-      <TouchableOpacity 
-        key={task.id} 
-        style={styles.cleanTaskItem}
-        onPress={() => handleEditTask(task)}
-        activeOpacity={0.7}
-      >
-        {/* Task Radio Button */}
-        <TouchableOpacity
-          style={[
-            styles.taskRadio,
-            isCompleted && styles.taskRadioCompleted,
-            { borderColor: loop?.color || Colors.light.primary }
-          ]}
-          onPress={() => !isCompleted && handleCompleteTask(task.id)}
-          disabled={isCompleted}
+      <View key={task.id} style={styles.cleanTaskContainer}>
+        {/* Main Task Row with Visual Indicators */}
+        <TouchableOpacity 
+          style={styles.cleanTaskItem}
+          onPress={() => handleEditTask(task)}
+          activeOpacity={0.7}
         >
+          {/* Task Radio Button */}
+          <TouchableOpacity
+            style={[
+              styles.taskRadio,
+              isCompleted && styles.taskRadioCompleted,
+              { borderColor: loop?.color || Colors.light.primary }
+            ]}
+            onPress={() => !isCompleted && handleCompleteTask(task.id)}
+            disabled={isCompleted}
+          >
+            {isCompleted && (
+              <View style={[styles.taskRadioFill, { backgroundColor: loop?.color || Colors.light.primary }]} />
+            )}
+          </TouchableOpacity>
+          
+          {/* Task Content */}
+          <View style={styles.cleanTaskContent}>
+            <Text style={[
+              styles.cleanTaskText,
+              isCompleted && styles.taskTextCompleted
+            ]}>
+              {task.description}
+            </Text>
+            
+            {/* Visual Indicators Row - NOW CLICKABLE */}
+            {indicators.length > 0 && (
+              <View style={styles.taskIndicators}>
+                {/* Person Icon - Clickable for Assignment */}
+                {task.assigned_email && (
+                  <TouchableOpacity 
+                    style={styles.indicatorButton}
+                    onPress={() => handleAssignTask(task.id)}
+                  >
+                    <Ionicons name="person" size={16} color={Colors.light.textSecondary} />
+                  </TouchableOpacity>
+                )}
+                
+                {/* Recurring Icon */}
+                {task.type === 'recurring' && (
+                  <View style={styles.indicatorWrapper}>
+                    <Ionicons name="refresh" size={16} color={Colors.light.textSecondary} />
+                  </View>
+                )}
+                
+                {/* Attachment Icon - Clickable for View */}
+                {task.attachments && task.attachments.length > 0 && (
+                  <TouchableOpacity 
+                    style={styles.indicatorButton}
+                    onPress={() => {
+                      setCurrentAttachments(task.attachments || []);
+                      setShowAttachmentsModal(true);
+                    }}
+                  >
+                    <Ionicons 
+                      name={task.attachments.some(att => att.type === 'image') ? "camera" : "attach"} 
+                      size={16} 
+                      color={Colors.light.textSecondary} 
+                    />
+                  </TouchableOpacity>
+                )}
+                
+                {/* Notes Icon - Clickable for Notes */}
+                {task.notes && (
+                  <TouchableOpacity 
+                    style={styles.indicatorButton}
+                    onPress={() => handleAddNote(task.id)}
+                  >
+                    <Ionicons name="chatbubble" size={16} color={Colors.light.textSecondary} />
+                  </TouchableOpacity>
+                )}
+                
+                {/* Calendar Icon - Clickable for Due Date */}
+                {task.due_date && (
+                  <TouchableOpacity 
+                    style={styles.indicatorButton}
+                    onPress={() => handleAddDueDate(task.id)}
+                  >
+                    <Ionicons name="calendar" size={16} color={Colors.light.textSecondary} />
+                  </TouchableOpacity>
+                )}
+                
+                {/* Tags Icon - Clickable for Tag Management */}
+                {task.tags && task.tags.length > 0 && (
+                  <TouchableOpacity 
+                    style={styles.indicatorButton}
+                    onPress={() => handleAddTag(task.id)}
+                  >
+                    <Ionicons name="pricetag" size={16} color={Colors.light.textSecondary} />
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
+          </View>
+          
+          {/* Completion Status */}
           {isCompleted && (
-            <View style={[styles.taskRadioFill, { backgroundColor: loop?.color || Colors.light.primary }]} />
+            <Ionicons name="checkmark-circle" size={20} color={Colors.light.success} />
           )}
         </TouchableOpacity>
         
-        {/* Task Content */}
-        <View style={styles.cleanTaskContent}>
-          <Text style={[
-            styles.cleanTaskText,
-            isCompleted && styles.taskTextCompleted
-          ]}>
-            {task.description}
-          </Text>
-          
-          {/* Visual Indicators Row */}
-          {indicators.length > 0 && (
-            <View style={styles.taskIndicators}>
-              {indicators.map((indicator, idx) => (
-                <View key={idx} style={styles.indicatorWrapper}>
-                  {indicator}
-                </View>
-              ))}
-            </View>
+        {/* Quick Action Buttons for Missing Features */}
+        <View style={styles.quickActions}>
+          {!task.assigned_email && (
+            <TouchableOpacity 
+              style={styles.quickActionButton}
+              onPress={() => handleAssignTask(task.id)}
+            >
+              <Ionicons name="person-add-outline" size={18} color={Colors.light.textSecondary} />
+            </TouchableOpacity>
           )}
+          
+          {(!task.attachments || task.attachments.length === 0) && (
+            <>
+              <TouchableOpacity 
+                style={styles.quickActionButton}
+                onPress={() => handleAttachImage(task.id)}
+              >
+                <Ionicons name="camera-outline" size={18} color={Colors.light.textSecondary} />
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={styles.quickActionButton}
+                onPress={() => handleAttachFile(task.id)}
+              >
+                <Ionicons name="attach-outline" size={18} color={Colors.light.textSecondary} />
+              </TouchableOpacity>
+            </>
+          )}
+          
+          {!task.notes && (
+            <TouchableOpacity 
+              style={styles.quickActionButton}
+              onPress={() => handleAddNote(task.id)}
+            >
+              <Ionicons name="chatbubble-outline" size={18} color={Colors.light.textSecondary} />
+            </TouchableOpacity>
+          )}
+          
+          {!task.due_date && (
+            <TouchableOpacity 
+              style={styles.quickActionButton}
+              onPress={() => handleAddDueDate(task.id)}
+            >
+              <Ionicons name="calendar-outline" size={18} color={Colors.light.textSecondary} />
+            </TouchableOpacity>
+          )}
+          
+          {(!task.tags || task.tags.length === 0) && (
+            <TouchableOpacity 
+              style={styles.quickActionButton}
+              onPress={() => handleAddTag(task.id)}
+            >
+              <Ionicons name="pricetag-outline" size={18} color={Colors.light.textSecondary} />
+            </TouchableOpacity>
+          )}
+          
+          <TouchableOpacity 
+            style={styles.quickActionButton}
+            onPress={() => handleDeleteTask(task.id)}
+          >
+            <Ionicons name="trash-outline" size={18} color={Colors.light.error} />
+          </TouchableOpacity>
         </View>
-        
-        {/* Completion Status */}
-        {isCompleted && (
-          <Ionicons name="checkmark-circle" size={20} color={Colors.light.success} />
-        )}
-      </TouchableOpacity>
+      </View>
     );
   };
 
