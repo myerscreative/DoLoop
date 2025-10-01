@@ -286,7 +286,13 @@ const Dashboard: React.FC = () => {
           <Text style={styles.sectionTitle}>Your Loops</Text>
           {loops.length > 0 ? (
             loops.slice(0, 5).map((loop) => (
-              <LoopCard key={loop.id} loop={loop} onToggleFavorite={toggleFavorite} />
+              <SwipeableLoopCard 
+                key={loop.id} 
+                loop={loop} 
+                token={token!}
+                onDelete={fetchLoops}
+                onToggleFavorite={toggleFavorite} 
+              />
             ))
           ) : (
             <Text style={styles.emptyText}>No loops yet</Text>
