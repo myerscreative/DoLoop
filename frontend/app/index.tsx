@@ -85,8 +85,16 @@ const Dashboard: React.FC = () => {
     </TouchableOpacity>
   );
 
-  const MyLoopItem: React.FC<{ title: string; icon: keyof typeof Ionicons.glyphMap; count?: number }> = ({ title, icon, count }) => (
-    <TouchableOpacity style={styles.myLoopItem} onPress={() => {/* TODO: Navigate to filtered view */}}>
+  const MyLoopItem: React.FC<{ 
+    title: string; 
+    icon: keyof typeof Ionicons.glyphMap; 
+    count?: number;
+    category: string;
+  }> = ({ title, icon, count, category }) => (
+    <TouchableOpacity 
+      style={styles.myLoopItem} 
+      onPress={() => router.push(`/my-loops?category=${category}`)}
+    >
       <Ionicons name={icon} size={20} color={Colors.light.textSecondary} />
       <Text style={styles.myLoopText}>{title}</Text>
       {count !== undefined && (
