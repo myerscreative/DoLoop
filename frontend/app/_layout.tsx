@@ -27,6 +27,7 @@ const RootLayoutNav: React.FC = () => {
       <Stack.Screen name="edit-loop" options={{ headerShown: false }} />
       <Stack.Screen name="ai-create-loop" options={{ headerShown: false }} />
       <Stack.Screen name="deleted-loops" options={{ headerShown: false }} />
+      <Stack.Screen name="settings" options={{ headerShown: false }} />
       <Stack.Screen name="loop/[id]" options={{ headerShown: false }} />
     </Stack>
   );
