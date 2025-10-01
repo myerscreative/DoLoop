@@ -980,30 +980,41 @@ const LoopDetailScreen: React.FC = () => {
       </Modal>
 
       {/* Due Date Picker Modal */}
-      {showDueDatePicker && (
-        <Modal visible={showDueDatePicker} animationType="slide" transparent={true}>
-          <View style={styles.modalOverlay}>
-            <View style={styles.datePickerContainer}>
-              <View style={styles.datePickerHeader}>
-                <TouchableOpacity onPress={() => setShowDueDatePicker(false)}>
-                  <Text style={styles.modalCloseText}>Cancel</Text>
-                </TouchableOpacity>
-                <Text style={styles.datePickerTitle}>Select Due Date</Text>
-                <TouchableOpacity onPress={() => handleDueDateChange(null, selectedDate)}>
-                  <Text style={styles.modalSaveText}>Done</Text>
-                </TouchableOpacity>
-              </View>
-              <DateTimePicker
-                value={selectedDate}
-                mode="date"
-                display="spinner"
-                onChange={handleDueDateChange}
-                style={styles.datePicker}
-              />
+      <Modal visible={showDueDatePicker} animationType="slide" presentationStyle="pageSheet">
+        <SafeAreaView style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <TouchableOpacity 
+              onPress={() => setShowDueDatePicker(false)} 
+              style={styles.modalCloseButton}
+            >
+              <Text style={styles.modalCloseText}>Cancel</Text>
+            </TouchableOpacity>
+            <View style={styles.modalTitleContainer}>
+              <Text style={styles.modalTitle}>Set Due Date</Text>
             </View>
+            <TouchableOpacity 
+              onPress={() => handleDueDateChange(null, selectedDate)}
+              style={[
+                styles.modalSaveButton, 
+                { backgroundColor: loop?.color || Colors.light.primary }
+              ]}
+            >
+              <Text style={styles.modalSaveText}>Set Date</Text>
+            </TouchableOpacity>
           </View>
-        </Modal>
-      )}
+          
+          <View style={styles.modalContent}>
+            <DateTimePicker
+              value={selectedDate}
+              mode="date"
+              display="default"
+              onChange={handleDueDateChange}
+              minimumDate={new Date()}
+              style={styles.datePicker}
+            />
+          </View>
+        </SafeAreaView>
+      </Modal>
 
       {/* Assign Modal */}
       <Modal visible={showAssignModal} animationType="slide" presentationStyle="pageSheet">
