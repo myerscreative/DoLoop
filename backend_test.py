@@ -59,329 +59,358 @@ class TaskFieldsTestSuite:
             return None
             
     def test_auth_setup(self):
-        """Test user registration and login to get auth token"""
-        self.log("Testing user registration and login...")
+        """Setup authentication for testing"""
+        self.log("Setting up authentication...")
         
-        # Register user
+        # Register test user
         register_data = {
-            "email": TEST_USER_EMAIL,
-            "password": TEST_USER_PASSWORD,
-            "name": TEST_USER_NAME
+            "email": self.test_user_email,
+            "password": self.test_user_password,
+            "name": self.test_user_name
         }
         
-        response = self.make_request("POST", "/auth/register", register_data, auth_required=False)
+        response = self.make_request("POST", "/auth/register", register_data)
         
-        if response.status_code == 400:
-            # User might already exist, try login
-            self.log("User already exists, attempting login...")
-            login_data = {
-                "email": TEST_USER_EMAIL,
-                "password": TEST_USER_PASSWORD
-            }
-            response = self.make_request("POST", "/auth/login", login_data, auth_required=False)
-            
-        if response.status_code in [200, 201]:
+        if response and response.status_code == 200:
             data = response.json()
             self.auth_token = data["token"]
-            self.test_user_id = data["user"]["id"]
-            self.log(f"✅ Authentication successful. User ID: {self.test_user_id}")
+            self.log("✅ User registration successful")
             return True
-        else:
-            self.log(f"❌ Authentication failed: {response.status_code} - {response.text}", "ERROR")
-            return False
+        elif response and response.status_code == 400:
+            # User already exists, try login
+            login_data = {
+                "email": self.test_user_email,
+                "password": self.test_user_password
+            }
             
-    def create_test_loop(self) -> Optional[str]:
-        """Create a test loop for deletion testing"""
+            response = self.make_request("POST", "/auth/login", login_data)
+            if response and response.status_code == 200:
+                data = response.json()
+                self.auth_token = data["token"]
+                self.log("✅ User login successful")
+                return True
+                
+        self.log("❌ Authentication setup failed", "ERROR")
+        return False
+        
+    def test_create_test_loop(self):
+        """Create a test loop for task testing"""
         self.log("Creating test loop...")
         
         loop_data = {
-            "name": "Test Loop for Deletion",
-            "description": "This loop will be used to test deletion functionality",
+            "name": "Task Fields Test Loop",
+            "description": "Loop for testing enhanced task fields",
             "color": "#FFC93A",
-            "reset_rule": "daily"
+            "reset_rule": "manual"
         }
         
         response = self.make_request("POST", "/loops", loop_data)
         
-        if response.status_code in [200, 201]:
+        if response and response.status_code == 200:
             data = response.json()
-            loop_id = data["id"]
-            self.test_loop_id = loop_id
-            self.log(f"✅ Test loop created successfully. Loop ID: {loop_id}")
-            return loop_id
-        else:
-            self.log(f"❌ Failed to create test loop: {response.status_code} - {response.text}", "ERROR")
-            return None
-            
-    def test_soft_delete_loop(self, loop_id: str) -> bool:
-        """Test soft deletion of a loop"""
-        self.log(f"Testing soft delete for loop {loop_id}...")
-        
-        response = self.make_request("DELETE", f"/loops/{loop_id}")
-        
-        if response.status_code == 200:
-            data = response.json()
-            self.log(f"✅ Loop soft deleted successfully: {data.get('message', 'No message')}")
+            self.test_loop_id = data["id"]
+            self.log(f"✅ Test loop created with ID: {self.test_loop_id}")
             return True
-        else:
-            self.log(f"❌ Soft delete failed: {response.status_code} - {response.text}", "ERROR")
-            return False
             
-    def test_get_deleted_loops(self) -> bool:
-        """Test retrieving deleted loops with days remaining calculation"""
-        self.log("Testing GET /api/loops/deleted endpoint...")
+        self.log("❌ Failed to create test loop", "ERROR")
+        return False
         
-        response = self.make_request("GET", "/loops/deleted")
+    def test_create_task_with_new_fields(self):
+        """Test creating a task with all new fields"""
+        self.total_tests += 1
+        self.log("Testing task creation with new fields...")
         
-        if response.status_code == 200:
-            data = response.json()
-            self.log(f"✅ Retrieved {len(data)} deleted loops")
-            
-            # Verify structure and days_remaining calculation
-            for loop in data:
-                required_fields = ["id", "name", "color", "deleted_at", "days_remaining"]
-                missing_fields = [field for field in required_fields if field not in loop]
-                
-                if missing_fields:
-                    self.log(f"❌ Missing fields in deleted loop: {missing_fields}", "ERROR")
-                    return False
-                    
-                # Verify days_remaining is reasonable (0-30)
-                days_remaining = loop["days_remaining"]
-                if not (0 <= days_remaining <= 30):
-                    self.log(f"❌ Invalid days_remaining value: {days_remaining}", "ERROR")
-                    return False
-                    
-                self.log(f"   Loop: {loop['name']} - Days remaining: {days_remaining}")
-                
-            return True
-        else:
-            self.log(f"❌ Failed to get deleted loops: {response.status_code} - {response.text}", "ERROR")
-            return False
-            
-    def test_restore_loop(self, loop_id: str) -> bool:
-        """Test restoring a soft-deleted loop"""
-        self.log(f"Testing restore for loop {loop_id}...")
+        # Create a task with all new fields
+        due_date = (datetime.utcnow() + timedelta(days=7)).isoformat()
         
-        response = self.make_request("POST", f"/loops/{loop_id}/restore")
-        
-        if response.status_code == 200:
-            data = response.json()
-            self.log(f"✅ Loop restored successfully: {data.get('message', 'No message')}")
-            
-            # Verify loop is back in regular loops list
-            response = self.make_request("GET", "/loops")
-            if response.status_code == 200:
-                loops = response.json()
-                restored_loop = next((loop for loop in loops if loop["id"] == loop_id), None)
-                if restored_loop:
-                    self.log("✅ Restored loop found in regular loops list")
-                    return True
-                else:
-                    self.log("❌ Restored loop not found in regular loops list", "ERROR")
-                    return False
-            else:
-                self.log("❌ Failed to verify restoration by checking loops list", "ERROR")
-                return False
-        else:
-            self.log(f"❌ Restore failed: {response.status_code} - {response.text}", "ERROR")
-            return False
-            
-    def test_permanent_delete_loop(self, loop_id: str) -> bool:
-        """Test permanent deletion of a soft-deleted loop"""
-        self.log(f"Testing permanent delete for loop {loop_id}...")
-        
-        response = self.make_request("DELETE", f"/loops/{loop_id}/permanent")
-        
-        if response.status_code == 200:
-            data = response.json()
-            self.log(f"✅ Loop permanently deleted: {data.get('message', 'No message')}")
-            
-            # Verify loop is no longer in deleted loops list
-            response = self.make_request("GET", "/loops/deleted")
-            if response.status_code == 200:
-                deleted_loops = response.json()
-                found_loop = next((loop for loop in deleted_loops if loop["id"] == loop_id), None)
-                if not found_loop:
-                    self.log("✅ Permanently deleted loop not found in deleted loops list")
-                    return True
-                else:
-                    self.log("❌ Permanently deleted loop still found in deleted loops list", "ERROR")
-                    return False
-            else:
-                self.log("❌ Failed to verify permanent deletion", "ERROR")
-                return False
-        else:
-            self.log(f"❌ Permanent delete failed: {response.status_code} - {response.text}", "ERROR")
-            return False
-            
-    def test_authentication_requirements(self) -> bool:
-        """Test that all endpoints require authentication"""
-        self.log("Testing authentication requirements...")
-        
-        # Save current token
-        original_token = self.auth_token
-        
-        # Test without token
-        self.auth_token = None
-        
-        endpoints_to_test = [
-            ("GET", "/loops/deleted"),
-            ("POST", f"/loops/{self.test_loop_id or 'dummy'}/restore"),
-            ("DELETE", f"/loops/{self.test_loop_id or 'dummy'}/permanent"),
-            ("DELETE", f"/loops/{self.test_loop_id or 'dummy'}")
-        ]
-        
-        all_protected = True
-        
-        for method, endpoint in endpoints_to_test:
-            response = self.make_request(method, endpoint, auth_required=False)
-            if response.status_code not in [401, 403]:
-                self.log(f"❌ Endpoint {method} {endpoint} not properly protected: {response.status_code}", "ERROR")
-                all_protected = False
-            else:
-                self.log(f"✅ Endpoint {method} {endpoint} properly protected")
-                
-        # Restore token
-        self.auth_token = original_token
-        
-        return all_protected
-        
-    def test_invalid_loop_ids(self) -> bool:
-        """Test error handling for invalid loop IDs"""
-        self.log("Testing error handling for invalid loop IDs...")
-        
-        invalid_ids = ["invalid-id", "000000000000000000000000", "nonexistent"]
-        
-        all_handled_correctly = True
-        
-        for invalid_id in invalid_ids:
-            endpoints_to_test = [
-                ("POST", f"/loops/{invalid_id}/restore"),
-                ("DELETE", f"/loops/{invalid_id}/permanent"),
-                ("DELETE", f"/loops/{invalid_id}")
+        task_data = {
+            "loop_id": self.test_loop_id,
+            "description": "Task with enhanced fields",
+            "type": "recurring",
+            "assigned_email": "assignee@example.com",
+            "due_date": due_date,
+            "tags": ["urgent", "important", "test"],
+            "notes": "This is a test task with notes and enhanced fields",
+            "attachments": [
+                {"name": "document.pdf", "url": "https://example.com/doc.pdf", "type": "pdf"},
+                {"name": "image.jpg", "url": "https://example.com/img.jpg", "type": "image"}
             ]
+        }
+        
+        response = self.make_request("POST", f"/loops/{self.test_loop_id}/tasks", task_data)
+        
+        if response and response.status_code == 200:
+            data = response.json()
+            self.test_task_id = data["id"]
             
-            for method, endpoint in endpoints_to_test:
-                response = self.make_request(method, endpoint)
-                if response.status_code != 404:
-                    self.log(f"❌ Invalid ID {invalid_id} not handled correctly for {method} {endpoint}: {response.status_code}", "ERROR")
-                    all_handled_correctly = False
-                else:
-                    self.log(f"✅ Invalid ID {invalid_id} handled correctly for {method} {endpoint}")
+            # Verify all fields are present and correct
+            success = True
+            
+            if data.get("assigned_email") != "assignee@example.com":
+                self.log(f"❌ assigned_email mismatch: expected 'assignee@example.com', got '{data.get('assigned_email')}'", "ERROR")
+                success = False
+                
+            if not data.get("due_date"):
+                self.log("❌ due_date not returned", "ERROR")
+                success = False
+                
+            if data.get("tags") != ["urgent", "important", "test"]:
+                self.log(f"❌ tags mismatch: expected ['urgent', 'important', 'test'], got {data.get('tags')}", "ERROR")
+                success = False
+                
+            if data.get("notes") != "This is a test task with notes and enhanced fields":
+                self.log(f"❌ notes mismatch: expected note text, got '{data.get('notes')}'", "ERROR")
+                success = False
+                
+            if len(data.get("attachments", [])) != 2:
+                self.log(f"❌ attachments count mismatch: expected 2, got {len(data.get('attachments', []))}", "ERROR")
+                success = False
+                
+            if success:
+                self.log("✅ Task created successfully with all new fields")
+                self.passed_tests += 1
+                return True
+            else:
+                self.log("❌ Task created but some fields are incorrect", "ERROR")
+                return False
+        else:
+            self.log(f"❌ Failed to create task. Status: {response.status_code if response else 'No response'}", "ERROR")
+            if response:
+                self.log(f"Response: {response.text}", "ERROR")
+            return False
+            
+    def test_get_task_with_new_fields(self):
+        """Test retrieving tasks and verify new fields are returned"""
+        self.total_tests += 1
+        self.log("Testing task retrieval with new fields...")
+        
+        response = self.make_request("GET", f"/loops/{self.test_loop_id}/tasks")
+        
+        if response and response.status_code == 200:
+            tasks = response.json()
+            
+            if not tasks:
+                self.log("❌ No tasks returned", "ERROR")
+                return False
+                
+            task = tasks[0]  # Get the first task (our test task)
+            
+            # Verify all new fields are present
+            success = True
+            required_fields = ["assigned_email", "due_date", "tags", "notes", "attachments"]
+            
+            for field in required_fields:
+                if field not in task:
+                    self.log(f"❌ Field '{field}' missing from task response", "ERROR")
+                    success = False
                     
-        return all_handled_correctly
-        
-    def test_restore_non_deleted_loop(self) -> bool:
-        """Test attempting to restore a loop that isn't deleted"""
-        self.log("Testing restore of non-deleted loop...")
-        
-        # Create a new loop that isn't deleted
-        loop_id = self.create_test_loop()
-        if not loop_id:
-            return False
-            
-        response = self.make_request("POST", f"/loops/{loop_id}/restore")
-        
-        if response.status_code == 404:
-            self.log("✅ Correctly rejected restore of non-deleted loop")
-            return True
+            if success:
+                self.log("✅ Task retrieval successful - all new fields present")
+                self.passed_tests += 1
+                return True
+            else:
+                self.log("❌ Task retrieval failed - missing fields", "ERROR")
+                return False
         else:
-            self.log(f"❌ Should have rejected restore of non-deleted loop: {response.status_code}", "ERROR")
+            self.log(f"❌ Failed to retrieve tasks. Status: {response.status_code if response else 'No response'}", "ERROR")
             return False
             
-    def test_permanent_delete_non_deleted_loop(self) -> bool:
-        """Test attempting to permanently delete a loop that isn't soft-deleted"""
-        self.log("Testing permanent delete of non-deleted loop...")
+    def test_update_task_with_new_fields(self):
+        """Test updating a task with new fields"""
+        self.total_tests += 1
+        self.log("Testing task update with new fields...")
         
-        # Use the loop we just created
-        if not self.test_loop_id:
-            return False
+        # Update the task with new values
+        new_due_date = (datetime.utcnow() + timedelta(days=14)).isoformat()
+        
+        update_data = {
+            "description": "Updated task description",
+            "assigned_email": "newassignee@example.com",
+            "due_date": new_due_date,
+            "tags": ["updated", "modified", "test"],
+            "notes": "Updated notes for the task",
+            "attachments": [
+                {"name": "updated_doc.pdf", "url": "https://example.com/updated.pdf", "type": "pdf"}
+            ]
+        }
+        
+        response = self.make_request("PUT", f"/tasks/{self.test_task_id}", update_data)
+        
+        if response and response.status_code == 200:
+            data = response.json()
             
-        response = self.make_request("DELETE", f"/loops/{self.test_loop_id}/permanent")
-        
-        if response.status_code == 404:
-            self.log("✅ Correctly rejected permanent delete of non-deleted loop")
-            return True
+            # Verify updated fields
+            success = True
+            
+            if data.get("description") != "Updated task description":
+                self.log(f"❌ description not updated: expected 'Updated task description', got '{data.get('description')}'", "ERROR")
+                success = False
+                
+            # Check if new fields are updated - this will likely fail due to the bug in server.py
+            if data.get("assigned_email") != "newassignee@example.com":
+                self.log(f"❌ assigned_email not updated: expected 'newassignee@example.com', got '{data.get('assigned_email')}'", "ERROR")
+                success = False
+                
+            if data.get("tags") != ["updated", "modified", "test"]:
+                self.log(f"❌ tags not updated: expected ['updated', 'modified', 'test'], got {data.get('tags')}", "ERROR")
+                success = False
+                
+            if data.get("notes") != "Updated notes for the task":
+                self.log(f"❌ notes not updated: expected 'Updated notes for the task', got '{data.get('notes')}'", "ERROR")
+                success = False
+                
+            if len(data.get("attachments", [])) != 1:
+                self.log(f"❌ attachments not updated: expected 1 attachment, got {len(data.get('attachments', []))}", "ERROR")
+                success = False
+                
+            if success:
+                self.log("✅ Task updated successfully with all new fields")
+                self.passed_tests += 1
+                return True
+            else:
+                self.log("❌ Task update failed - some fields not updated correctly", "ERROR")
+                return False
         else:
-            self.log(f"❌ Should have rejected permanent delete of non-deleted loop: {response.status_code}", "ERROR")
+            self.log(f"❌ Failed to update task. Status: {response.status_code if response else 'No response'}", "ERROR")
+            if response:
+                self.log(f"Response: {response.text}", "ERROR")
             return False
             
-    def run_comprehensive_test(self) -> Dict[str, bool]:
-        """Run all deleted loops functionality tests"""
+    def test_create_task_minimal_fields(self):
+        """Test creating a task with only required fields (backward compatibility)"""
+        self.total_tests += 1
+        self.log("Testing backward compatibility - task creation with minimal fields...")
+        
+        task_data = {
+            "loop_id": self.test_loop_id,
+            "description": "Minimal task",
+            "type": "one-time"
+        }
+        
+        response = self.make_request("POST", f"/loops/{self.test_loop_id}/tasks", task_data)
+        
+        if response and response.status_code == 200:
+            data = response.json()
+            
+            # Verify optional fields have default values
+            success = True
+            
+            if data.get("assigned_email") is not None:
+                self.log(f"❌ assigned_email should be None, got '{data.get('assigned_email')}'", "ERROR")
+                success = False
+                
+            if data.get("due_date") is not None:
+                self.log(f"❌ due_date should be None, got '{data.get('due_date')}'", "ERROR")
+                success = False
+                
+            if data.get("tags") != []:
+                self.log(f"❌ tags should be empty array, got {data.get('tags')}", "ERROR")
+                success = False
+                
+            if data.get("notes") is not None:
+                self.log(f"❌ notes should be None, got '{data.get('notes')}'", "ERROR")
+                success = False
+                
+            if data.get("attachments") != []:
+                self.log(f"❌ attachments should be empty array, got {data.get('attachments')}", "ERROR")
+                success = False
+                
+            if success:
+                self.log("✅ Backward compatibility test passed - minimal task created correctly")
+                self.passed_tests += 1
+                return True
+            else:
+                self.log("❌ Backward compatibility test failed", "ERROR")
+                return False
+        else:
+            self.log(f"❌ Failed to create minimal task. Status: {response.status_code if response else 'No response'}", "ERROR")
+            return False
+            
+    def test_datetime_serialization(self):
+        """Test that datetime objects are properly serialized"""
+        self.total_tests += 1
+        self.log("Testing datetime serialization...")
+        
+        # Create task with due_date
+        due_date = datetime.utcnow() + timedelta(days=5)
+        
+        task_data = {
+            "loop_id": self.test_loop_id,
+            "description": "DateTime test task",
+            "type": "recurring",
+            "due_date": due_date.isoformat()
+        }
+        
+        response = self.make_request("POST", f"/loops/{self.test_loop_id}/tasks", task_data)
+        
+        if response and response.status_code == 200:
+            data = response.json()
+            
+            # Verify due_date is returned as string and is parseable
+            due_date_str = data.get("due_date")
+            if due_date_str:
+                try:
+                    parsed_date = datetime.fromisoformat(due_date_str.replace('Z', '+00:00'))
+                    self.log("✅ DateTime serialization test passed")
+                    self.passed_tests += 1
+                    return True
+                except ValueError:
+                    self.log(f"❌ Invalid datetime format returned: {due_date_str}", "ERROR")
+                    return False
+            else:
+                self.log("❌ due_date not returned", "ERROR")
+                return False
+        else:
+            self.log(f"❌ Failed to create datetime test task. Status: {response.status_code if response else 'No response'}", "ERROR")
+            return False
+            
+    def run_all_tests(self):
+        """Run all test cases"""
         self.log("=" * 60)
-        self.log("STARTING COMPREHENSIVE DELETED LOOPS BACKEND TESTING")
+        self.log("STARTING ENHANCED TASK FIELDS TESTING")
         self.log("=" * 60)
         
-        results = {}
-        
-        # 1. Authentication
-        results["authentication"] = self.test_user_registration_and_login()
-        if not results["authentication"]:
-            self.log("❌ Cannot proceed without authentication", "ERROR")
-            return results
+        # Setup
+        if not self.test_auth_setup():
+            self.log("❌ Authentication setup failed - aborting tests", "ERROR")
+            return False
             
-        # 2. Create test loop
-        test_loop_created = self.create_test_loop() is not None
-        if not test_loop_created:
-            self.log("❌ Cannot proceed without test loop", "ERROR")
-            return results
+        if not self.test_create_test_loop():
+            self.log("❌ Test loop creation failed - aborting tests", "ERROR")
+            return False
             
-        # 3. Test authentication requirements
-        results["auth_requirements"] = self.test_authentication_requirements()
-        
-        # 4. Test invalid loop ID handling
-        results["invalid_ids"] = self.test_invalid_loop_ids()
-        
-        # 5. Test restore/permanent delete of non-deleted loops
-        results["restore_non_deleted"] = self.test_restore_non_deleted_loop()
-        results["permanent_delete_non_deleted"] = self.test_permanent_delete_non_deleted_loop()
-        
-        # 6. Test soft delete
-        results["soft_delete"] = self.test_soft_delete_loop(self.test_loop_id)
-        
-        # 7. Test get deleted loops
-        results["get_deleted_loops"] = self.test_get_deleted_loops()
-        
-        # 8. Test restore functionality
-        results["restore_loop"] = self.test_restore_loop(self.test_loop_id)
-        
-        # 9. Soft delete again for permanent delete test
-        if results["restore_loop"]:
-            self.test_soft_delete_loop(self.test_loop_id)
-            
-        # 10. Test permanent delete
-        results["permanent_delete"] = self.test_permanent_delete_loop(self.test_loop_id)
+        # Run tests
+        self.test_create_task_with_new_fields()
+        self.test_get_task_with_new_fields()
+        self.test_update_task_with_new_fields()
+        self.test_create_task_minimal_fields()
+        self.test_datetime_serialization()
         
         # Summary
         self.log("=" * 60)
-        self.log("TEST RESULTS SUMMARY")
+        self.log("TEST SUMMARY")
         self.log("=" * 60)
+        self.log(f"Total Tests: {self.total_tests}")
+        self.log(f"Passed: {self.passed_tests}")
+        self.log(f"Failed: {self.total_tests - self.passed_tests}")
+        self.log(f"Success Rate: {(self.passed_tests / self.total_tests * 100):.1f}%")
         
-        passed = sum(1 for result in results.values() if result)
-        total = len(results)
-        
-        for test_name, result in results.items():
-            status = "✅ PASS" if result else "❌ FAIL"
-            self.log(f"{test_name}: {status}")
-            
-        self.log(f"\nOverall: {passed}/{total} tests passed ({passed/total*100:.1f}%)")
-        
-        if passed == total:
-            self.log("🎉 ALL DELETED LOOPS TESTS PASSED!")
+        if self.passed_tests == self.total_tests:
+            self.log("🎉 ALL TESTS PASSED!")
+            return True
         else:
-            self.log("⚠️  Some tests failed - see details above")
-            
-        return results
+            self.log("❌ SOME TESTS FAILED!")
+            return False
 
 def main():
     """Main test execution"""
-    tester = DoloopAPITester()
-    results = tester.run_comprehensive_test()
+    test_suite = TaskFieldsTestSuite()
+    success = test_suite.run_all_tests()
     
-    # Return exit code based on results
-    all_passed = all(results.values())
-    return 0 if all_passed else 1
+    if success:
+        sys.exit(0)
+    else:
+        sys.exit(1)
 
 if __name__ == "__main__":
-    exit(main())
+    main()
