@@ -1106,38 +1106,64 @@ const LoopDetailScreen: React.FC = () => {
         <SafeAreaView style={styles.modalContainer}>
           <View style={styles.modalHeader}>
             <TouchableOpacity onPress={() => setShowTagModal(false)} style={styles.modalCloseButton}>
-              <Text style={styles.modalCloseText}>Cancel</Text>
+              <Text style={styles.modalCloseText}>Done</Text>
             </TouchableOpacity>
             <View style={styles.modalTitleContainer}>
-              <Text style={styles.modalTitle}>Add Tag</Text>
+              <Text style={styles.modalTitle}>Manage Tags</Text>
             </View>
-            <TouchableOpacity 
-              onPress={handleTagSubmit}
-              disabled={!newTag.trim()}
-              style={[
-                styles.modalSaveButton, 
-                { backgroundColor: loop?.color || Colors.light.primary },
-                !newTag.trim() && styles.modalSaveButtonDisabled
-              ]}
-            >
-              <Text style={[styles.modalSaveText, !newTag.trim() && styles.modalSaveTextDisabled]}>
-                Add
-              </Text>
-            </TouchableOpacity>
+            <View style={styles.modalCloseButton} />
           </View>
           
           <View style={styles.modalContent}>
+            {/* Existing Tags */}
+            {taskTags.length > 0 && (
+              <View style={styles.inputContainer}>
+                <Text style={styles.inputLabel}>Current Tags</Text>
+                <View style={styles.tagsContainer}>
+                  {taskTags.map((tag, index) => (
+                    <TouchableOpacity
+                      key={index}
+                      style={styles.tagChip}
+                      onPress={() => handleRemoveTag(tag)}
+                    >
+                      <Text style={styles.tagText}>{tag}</Text>
+                      <Ionicons name="close" size={16} color={Colors.light.textSecondary} />
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+            )}
+
+            {/* Add New Tag */}
             <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Tag Name</Text>
-              <TextInput
-                style={styles.input}
-                value={newTag}
-                onChangeText={setNewTag}
-                placeholder="Enter tag name"
-                placeholderTextColor={Colors.light.textSecondary}
-                autoFocus
-                maxLength={50}
-              />
+              <Text style={styles.inputLabel}>Add New Tag</Text>
+              <View style={styles.tagInputContainer}>
+                <TextInput
+                  style={[styles.input, styles.tagInput]}
+                  value={newTag}
+                  onChangeText={setNewTag}
+                  placeholder="Enter tag name"
+                  placeholderTextColor={Colors.light.textSecondary}
+                  maxLength={50}
+                  onSubmitEditing={handleTagSubmit}
+                  returnKeyType="done"
+                />
+                <TouchableOpacity
+                  onPress={handleTagSubmit}
+                  disabled={!newTag.trim()}
+                  style={[
+                    styles.addTagButton,
+                    { backgroundColor: loop?.color || Colors.light.primary },
+                    !newTag.trim() && styles.modalSaveButtonDisabled
+                  ]}
+                >
+                  <Ionicons 
+                    name="add" 
+                    size={20} 
+                    color={!newTag.trim() ? Colors.light.textSecondary : Colors.light.background} 
+                  />
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
         </SafeAreaView>
