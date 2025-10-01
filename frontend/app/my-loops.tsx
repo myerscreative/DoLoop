@@ -170,8 +170,23 @@ const MyLoopsScreen: React.FC = () => {
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <Ionicons name="arrow-back" size={24} color={Colors.light.text} />
+          </TouchableOpacity>
+          <View style={styles.headerContent}>
+            <View style={[styles.categoryIcon, { backgroundColor: currentCategory.color }]}>
+              <Ionicons name={currentCategory.icon} size={20} color={Colors.light.background} />
+            </View>
+            <View style={styles.headerText}>
+              <Text style={styles.headerTitle}>{currentCategory.title}</Text>
+              <Text style={styles.headerSubtitle}>{currentCategory.description}</Text>
+            </View>
+          </View>
+          <View style={styles.headerPlaceholder} />
+        </View>
         <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>Loading {currentCategory.title.toLowerCase()}...</Text>
+          <Text style={styles.loadingText}>Loading your {currentCategory.title.toLowerCase()} loops...</Text>
         </View>
       </SafeAreaView>
     );
