@@ -424,6 +424,14 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: Colors.light.text,
   },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  themeButton: {
+    padding: 8,
+  },
   logoutButton: {
     padding: 8,
   },
