@@ -730,13 +730,8 @@ const LoopDetailScreen: React.FC = () => {
                 icon="eye-outline" 
                 label="View Attachments" 
                 onPress={() => {
-                  // Show attachment list
-                  Alert.alert(
-                    'Attachments',
-                    task.attachments?.map((att: any, idx: number) => 
-                      `${idx + 1}. ${att.name || `File ${idx + 1}`}`
-                    ).join('\n') || 'No attachments'
-                  );
+                  setCurrentAttachments(task.attachments || []);
+                  setShowAttachmentsModal(true);
                 }}
                 value={`${task.attachments.length} file(s)`}
               />
