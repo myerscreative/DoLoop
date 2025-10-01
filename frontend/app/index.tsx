@@ -403,7 +403,7 @@ const Dashboard: React.FC = () => {
   );
 };
 
-const styles = StyleSheet.create({
+// Styles moved inside component for theme support
   container: {
     flex: 1,
     backgroundColor: Colors.light.background,
