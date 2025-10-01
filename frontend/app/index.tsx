@@ -107,6 +107,76 @@ const Dashboard: React.FC = () => {
     </TouchableOpacity>
   );
 
+  const LoopCard: React.FC<{ 
+    loop: Loop; 
+    onToggleFavorite: (loopId: string) => Promise<void>;
+  }> = ({ loop, onToggleFavorite }) => {
+    const [isToggling, setIsToggling] = useState(false);
+
+    const handleToggleFavorite = async (e: any) => {
+      e.stopPropagation(); // Prevent navigation when tapping heart
+      setIsToggling(true);
+      try {
+        await onToggleFavorite(loop.id);
+      } catch (error) {
+        console.log('Error toggling favorite:', error);
+      } finally {
+        setIsToggling(false);
+      }
+    };
+
+    const progressWidth = `${loop.progress || 0}%`;
+    
+    return (
+      <TouchableOpacity 
+        style={[styles.loopCard, { borderLeftColor: loop.color }]}
+        onPress={() => router.push(`/loop/${loop.id}`)}
+      >
+        <View style={styles.loopHeader}>
+          <View style={styles.loopInfo}>
+            <Text style={styles.loopName}>{loop.name}</Text>
+            {loop.description && (
+              <Text style={styles.loopDescription}>{loop.description}</Text>
+            )}
+          </View>
+          <View style={styles.loopStats}>
+            <Text style={styles.loopProgress}>{loop.progress || 0}%</Text>
+            <Text style={styles.loopTaskCount}>
+              {loop.completed_tasks || 0}/{loop.total_tasks || 0}
+            </Text>
+          </View>
+          <TouchableOpacity 
+            style={styles.heartButton}
+            onPress={handleToggleFavorite}
+            disabled={isToggling}
+          >
+            <Ionicons 
+              name={loop.is_favorite ? "heart" : "heart-outline"} 
+              size={24} 
+              color={loop.is_favorite ? Colors.light.secondary : Colors.light.textSecondary} 
+            />
+          </TouchableOpacity>
+        </View>
+        
+        <View style={styles.progressContainer}>
+          <View style={styles.progressBackground}>
+            <View 
+              style={[styles.progressFill, { width: progressWidth, backgroundColor: loop.color }]} 
+            />
+          </View>
+          <View style={styles.resetInfo}>
+            <Ionicons 
+              name={loop.reset_rule === 'manual' ? 'hand-left' : loop.reset_rule === 'daily' ? 'calendar' : 'calendar-outline'} 
+              size={12} 
+              color={Colors.light.textSecondary} 
+            />
+            <Text style={styles.resetText}>{loop.reset_rule}</Text>
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
   const FavoriteItem: React.FC<{ loop: Loop }> = ({ loop }) => (
     <TouchableOpacity 
       style={styles.favoriteItem}
