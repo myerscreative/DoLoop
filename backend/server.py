@@ -298,6 +298,77 @@ async def create_loop(loop_data: LoopCreate, current_user = Depends(get_current_
         completed_tasks=0
     )
 
+@api_router.put("/loops/{loop_id}", response_model=LoopResponse)
+async def update_loop(loop_id: str, loop_data: LoopUpdate, current_user = Depends(get_current_user)):
+    """Update a loop"""
+    try:
+        # Verify loop ownership
+        loop = await db.loops.find_one({"_id": ObjectId(loop_id), "owner_id": current_user["_id"]})
+        if not loop:
+            raise HTTPException(status_code=404, detail="Loop not found")
+        
+        # Build update data (only include provided fields)
+        update_data = {"updated_at": datetime.utcnow()}
+        if loop_data.name is not None:
+            update_data["name"] = loop_data.name
+        if loop_data.description is not None:
+            update_data["description"] = loop_data.description
+        if loop_data.color is not None:
+            update_data["color"] = loop_data.color
+        if loop_data.reset_rule is not None:
+            update_data["reset_rule"] = loop_data.reset_rule
+        
+        # Update the loop
+        await db.loops.update_one(
+            {"_id": ObjectId(loop_id)},
+            {"$set": update_data}
+        )
+        
+        # Fetch and return updated loop with progress
+        updated_loop = await db.loops.find_one({"_id": ObjectId(loop_id)})
+        
+        # Get task counts for progress calculation
+        total_tasks = await db.tasks.count_documents({"loop_id": loop_id, "status": {"$ne": "archived"}})
+        completed_tasks = await db.tasks.count_documents({"loop_id": loop_id, "status": "completed"})
+        progress = int((completed_tasks / total_tasks * 100) if total_tasks > 0 else 0)
+        
+        return LoopResponse(
+            id=str(updated_loop["_id"]),
+            name=updated_loop["name"],
+            description=updated_loop.get("description"),
+            color=updated_loop["color"],
+            owner_id=str(updated_loop["owner_id"]),
+            reset_rule=updated_loop["reset_rule"],
+            created_at=updated_loop["created_at"],
+            updated_at=updated_loop["updated_at"],
+            progress=progress,
+            total_tasks=total_tasks,
+            completed_tasks=completed_tasks
+        )
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to update loop: {str(e)}")
+
+@api_router.delete("/loops/{loop_id}")
+async def delete_loop(loop_id: str, current_user = Depends(get_current_user)):
+    """Delete a loop and all its tasks"""
+    try:
+        # Verify loop ownership
+        loop = await db.loops.find_one({"_id": ObjectId(loop_id), "owner_id": current_user["_id"]})
+        if not loop:
+            raise HTTPException(status_code=404, detail="Loop not found")
+        
+        # Delete all tasks in the loop first
+        await db.tasks.delete_many({"loop_id": loop_id})
+        
+        # Delete the loop
+        await db.loops.delete_one({"_id": ObjectId(loop_id)})
+        
+        return {"message": "Loop and all its tasks deleted successfully"}
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to delete loop: {str(e)}")
+
 # Task Routes
 @api_router.get("/loops/{loop_id}/tasks", response_model=List[TaskResponse])
 async def get_tasks(loop_id: str, current_user = Depends(get_current_user)):
