@@ -180,6 +180,24 @@ backend:
         agent: "testing"
         comment: "✅ COMPREHENSIVE TESTING PASSED: All deleted loops endpoints working correctly. GET /api/loops/deleted returns soft-deleted loops with accurate days_remaining calculation (30-day retention). POST /api/loops/{id}/restore successfully restores deleted loops back to active state. DELETE /api/loops/{id}/permanent permanently removes loops and associated tasks. DELETE /api/loops/{id} soft-delete functionality working properly. All endpoints require authentication, handle invalid ObjectIds correctly (404 responses), and properly validate loop ownership. Error handling for non-deleted loops attempting restore/permanent delete works correctly. Fixed ObjectId validation issues that were causing 500 errors - now properly returns 404 for invalid IDs."
 
+  - task: "Enhanced Task Fields Backend API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Extended Task model to support new fields: assigned_email, due_date, tags, notes, attachments. Updated TaskCreate, TaskUpdate, and TaskResponse models to include these fields."
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL BUG FOUND: Task update endpoint (PUT /api/tasks/{task_id}) was not updating the new fields (assigned_email, due_date, tags, notes, attachments). Only description and type were being updated. Also missing new fields in TaskResponse return object."
+      - working: true
+        agent: "testing"
+        comment: "✅ COMPREHENSIVE TESTING PASSED: Fixed critical bug in update_task endpoint. All enhanced task fields now working correctly. POST /api/loops/{loop_id}/tasks creates tasks with all new fields (assigned_email, due_date, tags, notes, attachments). PUT /api/tasks/{task_id} properly updates all new fields. GET /api/loops/{loop_id}/tasks returns all new fields correctly. Backward compatibility maintained - tasks with minimal fields work correctly with proper defaults. DateTime serialization working properly for due_date field. All 5/5 tests passed with 100% success rate."
+
 frontend:
   - task: "Authentication Screens"
     implemented: false
