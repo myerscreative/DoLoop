@@ -357,14 +357,20 @@ async def update_loop(loop_id: str, loop_data: LoopUpdate, current_user = Depend
 async def soft_delete_loop(loop_id: str, current_user = Depends(get_current_user)):
     """Soft delete a loop (move to deleted state for 30 days)"""
     try:
+        # Validate ObjectId format
+        try:
+            object_id = ObjectId(loop_id)
+        except:
+            raise HTTPException(status_code=404, detail="Loop not found")
+        
         # Verify loop ownership
-        loop = await db.loops.find_one({"_id": ObjectId(loop_id), "owner_id": current_user["_id"]})
+        loop = await db.loops.find_one({"_id": object_id, "owner_id": current_user["_id"]})
         if not loop:
             raise HTTPException(status_code=404, detail="Loop not found")
         
         # Mark as deleted with timestamp
         await db.loops.update_one(
-            {"_id": ObjectId(loop_id)},
+            {"_id": object_id},
             {
                 "$set": {
                     "is_deleted": True,
@@ -376,6 +382,8 @@ async def soft_delete_loop(loop_id: str, current_user = Depends(get_current_user
         
         return {"message": "Loop moved to deleted items"}
         
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to delete loop: {str(e)}")
 
