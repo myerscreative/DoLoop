@@ -404,7 +404,8 @@ const Dashboard: React.FC = () => {
 };
 
 // Styles moved inside component for theme support
-  container: {
+
+export default Dashboard;
     flex: 1,
     backgroundColor: Colors.light.background,
   },
