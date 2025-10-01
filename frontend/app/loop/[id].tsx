@@ -1232,6 +1232,73 @@ const LoopDetailScreen: React.FC = () => {
           </View>
         </SafeAreaView>
       </Modal>
+
+      {/* Attachments Modal */}
+      <Modal visible={showAttachmentsModal} animationType="slide" presentationStyle="pageSheet">
+        <SafeAreaView style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <TouchableOpacity onPress={() => setShowAttachmentsModal(false)} style={styles.modalCloseButton}>
+              <Text style={styles.modalCloseText}>Done</Text>
+            </TouchableOpacity>
+            <View style={styles.modalTitleContainer}>
+              <Text style={styles.modalTitle}>Attachments</Text>
+              <Text style={styles.modalSubtitle}>{currentAttachments.length} file(s)</Text>
+            </View>
+            <View style={styles.modalCloseButton} />
+          </View>
+          
+          <ScrollView style={styles.modalContent}>
+            {currentAttachments.map((attachment, index) => (
+              <View key={index} style={styles.attachmentItem}>
+                <View style={styles.attachmentInfo}>
+                  <Ionicons 
+                    name={attachment.type === 'image' ? 'image' : 'document'} 
+                    size={24} 
+                    color={Colors.light.primary} 
+                  />
+                  <View style={styles.attachmentDetails}>
+                    <Text style={styles.attachmentName}>
+                      {attachment.name || `${attachment.type === 'image' ? 'Image' : 'File'} ${index + 1}`}
+                    </Text>
+                    {attachment.size && (
+                      <Text style={styles.attachmentSize}>
+                        {(attachment.size / 1024).toFixed(1)} KB
+                      </Text>
+                    )}
+                    {attachment.type === 'image' && attachment.width && attachment.height && (
+                      <Text style={styles.attachmentSize}>
+                        {attachment.width} × {attachment.height}
+                      </Text>
+                    )}
+                  </View>
+                </View>
+                
+                <TouchableOpacity 
+                  style={styles.attachmentAction}
+                  onPress={() => {
+                    if (attachment.uri) {
+                      Alert.alert(
+                        'File Location', 
+                        `File saved at: ${attachment.uri}`,
+                        [{ text: 'OK' }]
+                      );
+                    }
+                  }}
+                >
+                  <Ionicons name="information-circle-outline" size={20} color={Colors.light.textSecondary} />
+                </TouchableOpacity>
+              </View>
+            ))}
+            
+            {currentAttachments.length === 0 && (
+              <View style={styles.emptyAttachments}>
+                <Ionicons name="attach" size={48} color={Colors.light.textSecondary} />
+                <Text style={styles.emptyAttachmentsText}>No attachments</Text>
+              </View>
+            )}
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
     </SafeAreaView>
   );
 };
