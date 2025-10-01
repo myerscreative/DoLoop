@@ -384,6 +384,21 @@ const styles = StyleSheet.create({
   quickActions: {
     paddingHorizontal: 24,
     paddingVertical: 16,
+    gap: 12,
+  },
+  aiCreateButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Colors.light.secondary,
+    paddingVertical: 16,
+    borderRadius: 12,
+  },
+  aiCreateButtonText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: Colors.light.background,
+    marginLeft: 8,
   },
   createButton: {
     flexDirection: 'row',
