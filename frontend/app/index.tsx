@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
-import { Colors } from '../constants/Colors';
+import { useTheme } from '../contexts/ThemeContext';
 import { Loop } from '../types';
 import Constants from 'expo-constants';
 import { router } from 'expo-router';
