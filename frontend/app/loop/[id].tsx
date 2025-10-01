@@ -1855,6 +1855,38 @@ const styles = StyleSheet.create({
     color: Colors.light.textSecondary,
     marginTop: 16,
   },
+  // Clean Task Design Styles
+  cleanTaskItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    backgroundColor: Colors.light.surface,
+    borderRadius: 12,
+    marginBottom: 8,
+    minHeight: 60,
+  },
+  cleanTaskContent: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  cleanTaskText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: Colors.light.text,
+    marginBottom: 6,
+  },
+  taskIndicators: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  indicatorWrapper: {
+    backgroundColor: Colors.light.backgroundSecondary,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 10,
+  },
 });
 
 export default LoopDetailScreen;
