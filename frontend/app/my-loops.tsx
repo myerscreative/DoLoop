@@ -20,9 +20,19 @@ const API_BASE_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || '';
 const MyLoopsScreen: React.FC = () => {
   const { category } = useLocalSearchParams<{ category: string }>();
   const { user, token } = useAuth();
+  const navigation = useRouter();
   const [loops, setLoops] = useState<Loop[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  const handleGoBack = () => {
+    try {
+      navigation.back();
+    } catch (error) {
+      // Fallback navigation
+      navigation.push('/');
+    }
+  };
 
   const categoryInfo = {
     'my-day': {
