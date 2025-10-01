@@ -1770,15 +1770,27 @@ const styles = StyleSheet.create({
     color: Colors.light.text,
   },
   // Attachment Modal Styles
+  attachmentContainer: {
+    marginBottom: 16,
+    backgroundColor: Colors.light.surface,
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  imagePreviewContainer: {
+    width: '100%',
+    height: 200,
+    backgroundColor: Colors.light.backgroundSecondary,
+  },
+  imagePreview: {
+    width: '100%',
+    height: '100%',
+  },
   attachmentItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingVertical: 16,
     paddingHorizontal: 16,
-    backgroundColor: Colors.light.surface,
-    borderRadius: 12,
-    marginBottom: 12,
   },
   attachmentInfo: {
     flexDirection: 'row',
