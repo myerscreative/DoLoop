@@ -246,9 +246,18 @@ const Dashboard: React.FC = () => {
               <Text style={styles.userName}>{user?.name}</Text>
             </View>
           </View>
-          <TouchableOpacity onPress={logout} style={styles.logoutButton}>
-            <Ionicons name="log-out-outline" size={24} color={Colors.light.textSecondary} />
-          </TouchableOpacity>
+          <View style={styles.headerRight}>
+            <TouchableOpacity onPress={toggleTheme} style={styles.themeButton}>
+              <Ionicons 
+                name={theme === 'dark' ? 'sunny' : 'moon'} 
+                size={24} 
+                color={colors.textSecondary} 
+              />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={logout} style={styles.logoutButton}>
+              <Ionicons name="log-out-outline" size={24} color={colors.textSecondary} />
+            </TouchableOpacity>
+          </View>
         </View>
 
         <ScrollView 
