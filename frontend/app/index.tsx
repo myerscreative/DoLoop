@@ -233,27 +233,28 @@ const Dashboard: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <View style={styles.logoContainer}>
-            <Ionicons name="sync" size={20} color={Colors.light.primary} />
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <View style={styles.header}>
+          <View style={styles.headerLeft}>
+            <View style={styles.logoContainer}>
+              <Ionicons name="sync" size={20} color={Colors.light.primary} />
+            </View>
+            <View>
+              <Text style={styles.welcomeText}>Welcome back</Text>
+              <Text style={styles.userName}>{user?.name}</Text>
+            </View>
           </View>
-          <View>
-            <Text style={styles.welcomeText}>Welcome back</Text>
-            <Text style={styles.userName}>{user?.name}</Text>
-          </View>
+          <TouchableOpacity onPress={logout} style={styles.logoutButton}>
+            <Ionicons name="log-out-outline" size={24} color={Colors.light.textSecondary} />
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity onPress={logout} style={styles.logoutButton}>
-          <Ionicons name="log-out-outline" size={24} color={Colors.light.textSecondary} />
-        </TouchableOpacity>
-      </View>
 
-      <ScrollView 
-        style={styles.content}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-      >
+        <ScrollView 
+          style={styles.content}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+        >
         {/* Search Bar */}
         <View style={styles.searchContainer}>
           <View style={styles.searchBar}>
