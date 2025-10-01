@@ -13,7 +13,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { Colors } from '../constants/Colors';
 import { Loop } from '../types';
 import Constants from 'expo-constants';
-import { router, useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams, useRouter } from 'expo-router';
 
 const API_BASE_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || '';
 
