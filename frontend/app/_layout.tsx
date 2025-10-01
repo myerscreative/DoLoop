@@ -23,6 +23,7 @@ const RootLayoutNav: React.FC = () => {
       <Stack.Screen name="auth" options={{ headerShown: false }} />
       <Stack.Screen name="my-loops" options={{ headerShown: false }} />
       <Stack.Screen name="create-loop" options={{ headerShown: false }} />
+      <Stack.Screen name="edit-loop" options={{ headerShown: false }} />
       <Stack.Screen name="ai-create-loop" options={{ headerShown: false }} />
       <Stack.Screen name="loop/[id]" options={{ headerShown: false }} />
     </Stack>
