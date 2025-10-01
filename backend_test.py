@@ -10,7 +10,7 @@ import sys
 from datetime import datetime
 
 # Configuration
-BASE_URL = "https://loopflow.preview.emergentagent.com/api"
+BASE_URL = "https://routineloop.preview.emergentagent.com/api"
 TEST_USER_EMAIL = "test@doloop.com"
 TEST_USER_PASSWORD = "testpass123"
 TEST_USER_NAME = "Test User"
