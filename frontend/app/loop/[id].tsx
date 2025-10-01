@@ -1973,16 +1973,13 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   indicatorWrapper: {
-    backgroundColor: Colors.light.backgroundSecondary,
-    paddingHorizontal: 6,
+    paddingHorizontal: 4,
     paddingVertical: 2,
-    borderRadius: 10,
   },
   indicatorButton: {
-    backgroundColor: Colors.light.backgroundSecondary,
-    paddingHorizontal: 6,
+    paddingHorizontal: 4,
     paddingVertical: 2,
-    borderRadius: 10,
+    borderRadius: 12,
   },
   quickActions: {
     flexDirection: 'row',
