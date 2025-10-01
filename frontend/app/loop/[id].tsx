@@ -432,7 +432,7 @@ const LoopDetailScreen: React.FC = () => {
             >
               <Text style={styles.modalCloseText}>Cancel</Text>
             </TouchableOpacity>
-            <Text style={styles.modalTitle}>Add New Task</Text>
+            <Text style={styles.modalTitle}>Adding New Task to "{loop.name}"</Text>
             <TouchableOpacity 
               onPress={handleAddTask}
               disabled={!newTaskText.trim() || addingTask}
