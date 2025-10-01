@@ -1,20 +1,17 @@
 #!/usr/bin/env python3
 """
-Backend API Testing for Doloop - Deleted Loops Functionality
-Tests the deleted loops endpoints with authentication and error handling
+Backend API Testing for Enhanced Task Functionality
+Tests the new task fields: assigned_email, due_date, tags, notes, attachments
 """
 
 import requests
 import json
-import time
 from datetime import datetime, timedelta
-from typing import Dict, Any, Optional
+import sys
+import os
 
-# Configuration
-BASE_URL = "https://routineloop.preview.emergentagent.com/api"
-TEST_USER_EMAIL = "testuser@doloop.com"
-TEST_USER_PASSWORD = "testpassword123"
-TEST_USER_NAME = "Test User"
+# Get backend URL from frontend .env
+BACKEND_URL = "https://routineloop.preview.emergentagent.com/api"
 
 class DoloopAPITester:
     def __init__(self):
