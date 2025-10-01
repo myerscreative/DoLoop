@@ -529,19 +529,26 @@ const LoopDetailScreen: React.FC = () => {
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         aspect: [4, 3],
-        quality: 1,
+        quality: 0.7, // Reduce quality for better performance
+        base64: true, // Get base64 data for reliable display
       });
 
       if (!result.canceled && result.assets[0]) {
         const image = result.assets[0];
         const task = tasks.find(t => t.id === taskId);
         const currentAttachments = task?.attachments || [];
+        
+        // Use base64 data URI for reliable display across platforms
+        const imageUri = image.base64 ? `data:image/jpeg;base64,${image.base64}` : image.uri;
+        
         const newAttachment = {
           type: 'image',
           name: `image_${Date.now()}.jpg`,
-          uri: image.uri,
+          uri: imageUri,
+          originalUri: image.uri, // Keep original URI as backup
           width: image.width,
           height: image.height,
+          size: image.fileSize,
         };
         
         const updatedAttachments = [...currentAttachments, newAttachment];
