@@ -49,6 +49,7 @@ const LoopDetailScreen: React.FC = () => {
   const [assignEmail, setAssignEmail] = useState('');
   const [showTagModal, setShowTagModal] = useState(false);
   const [newTag, setNewTag] = useState('');
+  const [taskTags, setTaskTags] = useState<string[]>([]);
   const [showNoteModal, setShowNoteModal] = useState(false);
   const [noteText, setNoteText] = useState('');
 
