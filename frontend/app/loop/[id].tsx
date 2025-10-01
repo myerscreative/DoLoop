@@ -1340,12 +1340,19 @@ const styles = StyleSheet.create({
     color: Colors.light.background,
     fontWeight: '600',
   },
-  header: {
+  cleanHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    paddingTop: 16,
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    paddingTop: 20,
+  },
+  headerCenter: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   backButton: {
     padding: 8,
