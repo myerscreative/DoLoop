@@ -22,6 +22,7 @@ const API_BASE_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || '';
 
 const Dashboard: React.FC = () => {
   const { user, token, logout } = useAuth();
+  const { theme, colors, toggleTheme } = useTheme();
   const [loops, setLoops] = useState<Loop[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
