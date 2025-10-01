@@ -13,40 +13,50 @@ import os
 # Get backend URL from frontend .env
 BACKEND_URL = "https://routineloop.preview.emergentagent.com/api"
 
-class DoloopAPITester:
+class TaskFieldsTestSuite:
     def __init__(self):
-        self.base_url = BASE_URL
+        self.base_url = BACKEND_URL
         self.auth_token = None
-        self.test_user_id = None
+        self.test_user_email = "taskfields@test.com"
+        self.test_user_password = "testpass123"
+        self.test_user_name = "Task Fields Tester"
         self.test_loop_id = None
-        self.session = requests.Session()
+        self.test_task_id = None
+        self.passed_tests = 0
+        self.total_tests = 0
         
-    def log(self, message: str, level: str = "INFO"):
-        """Log test messages with timestamp"""
-        timestamp = datetime.now().strftime("%H:%M:%S")
-        print(f"[{timestamp}] {level}: {message}")
+    def log(self, message, level="INFO"):
+        """Log test messages"""
+        print(f"[{level}] {message}")
         
-    def make_request(self, method: str, endpoint: str, data: Dict = None, 
-                    auth_required: bool = True) -> requests.Response:
-        """Make HTTP request with optional authentication"""
+    def make_request(self, method, endpoint, data=None, headers=None):
+        """Make HTTP request with proper error handling"""
         url = f"{self.base_url}{endpoint}"
-        headers = {"Content-Type": "application/json"}
         
-        if auth_required and self.auth_token:
+        if headers is None:
+            headers = {}
+            
+        if self.auth_token:
             headers["Authorization"] = f"Bearer {self.auth_token}"
             
-        if method.upper() == "GET":
-            response = self.session.get(url, headers=headers)
-        elif method.upper() == "POST":
-            response = self.session.post(url, headers=headers, json=data)
-        elif method.upper() == "PUT":
-            response = self.session.put(url, headers=headers, json=data)
-        elif method.upper() == "DELETE":
-            response = self.session.delete(url, headers=headers)
-        else:
-            raise ValueError(f"Unsupported HTTP method: {method}")
-            
-        return response
+        headers["Content-Type"] = "application/json"
+        
+        try:
+            if method == "GET":
+                response = requests.get(url, headers=headers)
+            elif method == "POST":
+                response = requests.post(url, json=data, headers=headers)
+            elif method == "PUT":
+                response = requests.put(url, json=data, headers=headers)
+            elif method == "DELETE":
+                response = requests.delete(url, headers=headers)
+            else:
+                raise ValueError(f"Unsupported method: {method}")
+                
+            return response
+        except Exception as e:
+            self.log(f"Request failed: {str(e)}", "ERROR")
+            return None
         
     def test_user_registration_and_login(self) -> bool:
         """Test user registration and login to get auth token"""
