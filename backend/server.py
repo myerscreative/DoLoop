@@ -122,6 +122,16 @@ class AIOptimizeLoopRequest(BaseModel):
 class FavoriteToggleRequest(BaseModel):
     loop_id: str
 
+class LoopUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    color: Optional[str] = None
+    reset_rule: Optional[str] = Field(None, pattern="^(manual|daily|weekly)$")
+
+class TaskUpdate(BaseModel):
+    description: Optional[str] = None
+    type: Optional[str] = Field(None, pattern="^(recurring|one-time)$")
+
 # AI Helper Functions
 async def get_ai_chat():
     """Initialize AI chat with system message for Doloop context"""
