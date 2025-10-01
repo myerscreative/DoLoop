@@ -8,6 +8,7 @@ export interface User {
 
 export interface Loop {
   _id: string;
+  id: string;
   name: string;
   description?: string;
   color: string;  // One of our brand colors
@@ -18,6 +19,7 @@ export interface Loop {
   progress?: number;  // Calculated field 0-100
   total_tasks?: number;
   completed_tasks?: number;
+  is_favorite?: boolean;  // New field for favorites
 }
 
 export interface Task {
