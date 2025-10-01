@@ -13,6 +13,8 @@ from datetime import datetime, timedelta
 import jwt
 import bcrypt
 from bson import ObjectId
+import asyncio
+from emergentintegrations.llm.chat import LlmChat, UserMessage
 
 
 ROOT_DIR = Path(__file__).parent
@@ -33,6 +35,9 @@ api_router = APIRouter(prefix="/api")
 JWT_SECRET = "doloop-secret-key-change-in-production"  # TODO: Use environment variable
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRATION_HOURS = 24 * 7  # 7 days
+
+# AI Configuration
+EMERGENT_LLM_KEY = os.environ.get('EMERGENT_LLM_KEY')
 
 # Security
 security = HTTPBearer()
@@ -101,6 +106,40 @@ class TaskResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     order: int
+
+# AI Models
+class AILoopRequest(BaseModel):
+    description: str
+    category: Optional[str] = None
+
+class AISuggestTasksRequest(BaseModel):
+    loop_id: str
+    context: Optional[str] = None
+
+class AIOptimizeLoopRequest(BaseModel):
+    loop_id: str
+
+# AI Helper Functions
+async def get_ai_chat():
+    """Initialize AI chat with system message for Doloop context"""
+    chat = LlmChat(
+        api_key=EMERGENT_LLM_KEY,
+        session_id=f"doloop-{uuid.uuid4()}",
+        system_message="""You are an AI assistant helping users with Doloop, a loop-based task management app. 
+
+Doloop helps users create "loops" which are collections of recurring tasks that reset periodically (daily, weekly, or manually). 
+
+When helping users:
+1. For loop creation: Generate clear, actionable task lists based on their description
+2. For task suggestions: Suggest relevant, specific tasks that fit the loop's purpose
+3. For optimization: Suggest better task ordering, missing tasks, or improvements
+4. Keep tasks concise and actionable (under 50 characters when possible)
+5. Consider the loop type: recurring tasks reset when loop resets, one-time tasks are archived when completed
+
+Always respond in JSON format as specified in the request."""
+    ).with_model("openai", "gpt-4o-mini")
+    
+    return chat
 
 # Auth Helper Functions
 def create_access_token(user_id: str):
