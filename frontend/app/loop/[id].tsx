@@ -629,6 +629,56 @@ const LoopDetailScreen: React.FC = () => {
           </View>
         </SafeAreaView>
       </Modal>
+
+      {/* Edit Task Modal */}
+      <Modal visible={showEditTask} animationType="slide" presentationStyle="pageSheet">
+        <SafeAreaView style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <TouchableOpacity 
+              onPress={() => {
+                setShowEditTask(false);
+                setEditingTask(null);
+                setEditTaskText('');
+              }} 
+              style={styles.modalCloseButton}
+            >
+              <Text style={styles.modalCloseText}>Cancel</Text>
+            </TouchableOpacity>
+            <View style={styles.modalTitleContainer}>
+              <Text style={styles.modalTitle}>Edit Task</Text>
+              <Text style={styles.modalSubtitle}>in "{loop.name}"</Text>
+            </View>
+            <TouchableOpacity 
+              onPress={handleUpdateTask}
+              disabled={!editTaskText.trim()}
+              style={[
+                styles.modalSaveButton, 
+                { backgroundColor: loop?.color || Colors.light.primary },
+                !editTaskText.trim() && styles.modalSaveButtonDisabled
+              ]}
+            >
+              <Text style={[styles.modalSaveText, !editTaskText.trim() && styles.modalSaveTextDisabled]}>
+                Save
+              </Text>
+            </TouchableOpacity>
+          </View>
+          
+          <View style={styles.modalContent}>
+            <View style={styles.inputContainer}>
+              <Text style={styles.inputLabel}>Task Description</Text>
+              <TextInput
+                style={styles.input}
+                value={editTaskText}
+                onChangeText={setEditTaskText}
+                placeholder="What needs to be done?"
+                placeholderTextColor={Colors.light.textSecondary}
+                autoFocus
+                maxLength={200}
+              />
+            </View>
+          </View>
+        </SafeAreaView>
+      </Modal>
     </SafeAreaView>
   );
 };
