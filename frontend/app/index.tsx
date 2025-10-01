@@ -38,14 +38,51 @@ const Dashboard: React.FC = () => {
       if (response.ok) {
         const data = await response.json();
         setLoops(data);
-        // For now, consider loops with high progress as favorites
-        setFavorites(data.filter((loop: Loop) => (loop.progress || 0) > 50).slice(0, 5));
+        // Get actual favorites from API
+        fetchFavorites();
       }
     } catch (error) {
       console.log('Error fetching loops:', error);
     } finally {
       setLoading(false);
       setRefreshing(false);
+    }
+  };
+
+  const fetchFavorites = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/loops/favorites`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setFavorites(data);
+      }
+    } catch (error) {
+      console.log('Error fetching favorites:', error);
+    }
+  };
+
+  const toggleFavorite = async (loopId: string) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/loops/${loopId}/toggle-favorite`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        // Refresh both loops and favorites
+        fetchLoops();
+      }
+    } catch (error) {
+      console.log('Error toggling favorite:', error);
     }
   };
 
