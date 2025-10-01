@@ -1811,8 +1811,13 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: Colors.light.textSecondary,
   },
-  attachmentAction: {
+  attachmentActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  attachmentActionButton: {
     padding: 8,
+    marginLeft: 8,
   },
   emptyAttachments: {
     alignItems: 'center',
