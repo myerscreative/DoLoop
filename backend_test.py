@@ -17,7 +17,7 @@ class TaskFieldsTestSuite:
     def __init__(self):
         self.base_url = BACKEND_URL
         self.auth_token = None
-        self.test_user_email = "taskfields@test.com"
+        self.test_user_email = "taskfields2@test.com"
         self.test_user_password = "testpass123"
         self.test_user_name = "Task Fields Tester"
         self.test_loop_id = None
