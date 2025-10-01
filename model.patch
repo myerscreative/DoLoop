@@ -1,495 +1,582 @@
-diff --git a/backend/.env b/backend/.env
-index 0f4322c..245b713 100644
---- a/backend/.env
-+++ b/backend/.env
-@@ -1,2 +1,3 @@
- MONGO_URL="mongodb://localhost:27017"
--DB_NAME="test_database"
-\ No newline at end of file
-+DB_NAME="test_database"
-+EMERGENT_LLM_KEY=sk-emergent-3Dd0b9c4cBdCe7cAe9
-\ No newline at end of file
+diff --git a/backend/server.py b/backend/server.py
+index c904ad4..730cdc0 100644
+--- a/backend/server.py
++++ b/backend/server.py
+@@ -298,6 +298,77 @@ async def create_loop(loop_data: LoopCreate, current_user = Depends(get_current_
+         completed_tasks=0
+     )
+ 
++@api_router.put("/loops/{loop_id}", response_model=LoopResponse)
++async def update_loop(loop_id: str, loop_data: LoopUpdate, current_user = Depends(get_current_user)):
++    """Update a loop"""
++    try:
++        # Verify loop ownership
++        loop = await db.loops.find_one({"_id": ObjectId(loop_id), "owner_id": current_user["_id"]})
++        if not loop:
++            raise HTTPException(status_code=404, detail="Loop not found")
++        
++        # Build update data (only include provided fields)
++        update_data = {"updated_at": datetime.utcnow()}
++        if loop_data.name is not None:
++            update_data["name"] = loop_data.name
++        if loop_data.description is not None:
++            update_data["description"] = loop_data.description
++        if loop_data.color is not None:
++            update_data["color"] = loop_data.color
++        if loop_data.reset_rule is not None:
++            update_data["reset_rule"] = loop_data.reset_rule
++        
++        # Update the loop
++        await db.loops.update_one(
++            {"_id": ObjectId(loop_id)},
++            {"$set": update_data}
++        )
++        
++        # Fetch and return updated loop with progress
++        updated_loop = await db.loops.find_one({"_id": ObjectId(loop_id)})
++        
++        # Get task counts for progress calculation
++        total_tasks = await db.tasks.count_documents({"loop_id": loop_id, "status": {"$ne": "archived"}})
++        completed_tasks = await db.tasks.count_documents({"loop_id": loop_id, "status": "completed"})
++        progress = int((completed_tasks / total_tasks * 100) if total_tasks > 0 else 0)
++        
++        return LoopResponse(
++            id=str(updated_loop["_id"]),
++            name=updated_loop["name"],
++            description=updated_loop.get("description"),
++            color=updated_loop["color"],
++            owner_id=str(updated_loop["owner_id"]),
++            reset_rule=updated_loop["reset_rule"],
++            created_at=updated_loop["created_at"],
++            updated_at=updated_loop["updated_at"],
++            progress=progress,
++            total_tasks=total_tasks,
++            completed_tasks=completed_tasks
++        )
++        
++    except Exception as e:
++        raise HTTPException(status_code=500, detail=f"Failed to update loop: {str(e)}")
++
++@api_router.delete("/loops/{loop_id}")
++async def delete_loop(loop_id: str, current_user = Depends(get_current_user)):
++    """Delete a loop and all its tasks"""
++    try:
++        # Verify loop ownership
++        loop = await db.loops.find_one({"_id": ObjectId(loop_id), "owner_id": current_user["_id"]})
++        if not loop:
++            raise HTTPException(status_code=404, detail="Loop not found")
++        
++        # Delete all tasks in the loop first
++        await db.tasks.delete_many({"loop_id": loop_id})
++        
++        # Delete the loop
++        await db.loops.delete_one({"_id": ObjectId(loop_id)})
++        
++        return {"message": "Loop and all its tasks deleted successfully"}
++        
++    except Exception as e:
++        raise HTTPException(status_code=500, detail=f"Failed to delete loop: {str(e)}")
++
+ # Task Routes
+ @api_router.get("/loops/{loop_id}/tasks", response_model=List[TaskResponse])
+ async def get_tasks(loop_id: str, current_user = Depends(get_current_user)):
 diff --git a/model.patch b/model.patch
-index 2e15773..e69de29 100644
+index d62abb0..e69de29 100644
 --- a/model.patch
 +++ b/model.patch
-@@ -1,479 +0,0 @@
+@@ -1,495 +0,0 @@
+-diff --git a/backend/.env b/backend/.env
+-index 0f4322c..245b713 100644
+---- a/backend/.env
+-+++ b/backend/.env
+-@@ -1,2 +1,3 @@
+- MONGO_URL="mongodb://localhost:27017"
+--DB_NAME="test_database"
+-\ No newline at end of file
+-+DB_NAME="test_database"
+-+EMERGENT_LLM_KEY=sk-emergent-3Dd0b9c4cBdCe7cAe9
+-\ No newline at end of file
 -diff --git a/model.patch b/model.patch
--index adaef7f..e69de29 100644
+-index 2e15773..e69de29 100644
 ---- a/model.patch
 -+++ b/model.patch
--@@ -1,370 +0,0 @@
---diff --git a/frontend/app/index.tsx b/frontend/app/index.tsx
---index 60b6cda..fda10e5 100644
------ a/frontend/app/index.tsx
---+++ b/frontend/app/index.tsx
---@@ -1,30 +1,347 @@
----import { Text, View, StyleSheet, Image } from "react-native";
---+import React, { useEffect, useState } from 'react';
---+import {
---+  View,
---+  Text,
---+  StyleSheet,
---+  ScrollView,
---+  TouchableOpacity,
---+  SafeAreaView,
---+  RefreshControl,
---+} from 'react-native';
---+import { Ionicons } from '@expo/vector-icons';
---+import { useAuth } from '../contexts/AuthContext';
---+import { Colors } from '../constants/Colors';
---+import { Loop } from '../types';
---+import Constants from 'expo-constants';
---+import { router } from 'expo-router';
+-@@ -1,479 +0,0 @@
+--diff --git a/model.patch b/model.patch
+--index adaef7f..e69de29 100644
+----- a/model.patch
+--+++ b/model.patch
+--@@ -1,370 +0,0 @@
+---diff --git a/frontend/app/index.tsx b/frontend/app/index.tsx
+---index 60b6cda..fda10e5 100644
+------ a/frontend/app/index.tsx
+---+++ b/frontend/app/index.tsx
+---@@ -1,30 +1,347 @@
+----import { Text, View, StyleSheet, Image } from "react-native";
+---+import React, { useEffect, useState } from 'react';
+---+import {
+---+  View,
+---+  Text,
+---+  StyleSheet,
+---+  ScrollView,
+---+  TouchableOpacity,
+---+  SafeAreaView,
+---+  RefreshControl,
+---+} from 'react-native';
+---+import { Ionicons } from '@expo/vector-icons';
+---+import { useAuth } from '../contexts/AuthContext';
+---+import { Colors } from '../constants/Colors';
+---+import { Loop } from '../types';
+---+import Constants from 'expo-constants';
+---+import { router } from 'expo-router';
+--- 
+----const EXPO_PUBLIC_BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
+---+const API_BASE_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || '';
+--- 
+----export default function Index() {
+----  console.log(EXPO_PUBLIC_BACKEND_URL, "EXPO_PUBLIC_BACKEND_URL");
+---+const Dashboard: React.FC = () => {
+---+  const { user, token, logout } = useAuth();
+---+  const [loops, setLoops] = useState<Loop[]>([]);
+---+  const [loading, setLoading] = useState(true);
+---+  const [refreshing, setRefreshing] = useState(false);
+---+
+---+  const fetchLoops = async () => {
+---+    try {
+---+      const response = await fetch(`${API_BASE_URL}/api/loops`, {
+---+        headers: {
+---+          'Authorization': `Bearer ${token}`,
+---+          'Content-Type': 'application/json',
+---+        },
+---+      });
+---+
+---+      if (response.ok) {
+---+        const data = await response.json();
+---+        setLoops(data);
+---+      }
+---+    } catch (error) {
+---+      console.log('Error fetching loops:', error);
+---+    } finally {
+---+      setLoading(false);
+---+      setRefreshing(false);
+---+    }
+---+  };
+---+
+---+  useEffect(() => {
+---+    fetchLoops();
+---+  }, []);
+---+
+---+  const onRefresh = () => {
+---+    setRefreshing(true);
+---+    fetchLoops();
+---+  };
+---+
+---+  const renderLoopCard = (loop: Loop) => {
+---+    const progressWidth = `${loop.progress || 0}%`;
+---+    
+---+    return (
+---+      <TouchableOpacity
+---+        key={loop.id}
+---+        style={[styles.loopCard, { borderLeftColor: loop.color }]}
+---+        onPress={() => router.push(`/loop/${loop.id}`)}
+---+      >
+---+        <View style={styles.loopHeader}>
+---+          <View style={styles.loopInfo}>
+---+            <Text style={styles.loopName}>{loop.name}</Text>
+---+            {loop.description && (
+---+              <Text style={styles.loopDescription}>{loop.description}</Text>
+---+            )}
+---+          </View>
+---+          <View style={styles.loopStats}>
+---+            <Text style={styles.loopProgress}>{loop.progress || 0}%</Text>
+---+            <Text style={styles.loopTaskCount}>
+---+              {loop.completed_tasks || 0}/{loop.total_tasks || 0}
+---+            </Text>
+---+          </View>
+---+        </View>
+---+        
+---+        <View style={styles.progressContainer}>
+---+          <View style={styles.progressBackground}>
+---+            <View 
+---+              style={[styles.progressFill, { width: progressWidth, backgroundColor: loop.color }]} 
+---+            />
+---+          </View>
+---+          <View style={styles.resetInfo}>
+---+            <Ionicons 
+---+              name={loop.reset_rule === 'manual' ? 'hand-left' : loop.reset_rule === 'daily' ? 'calendar' : 'calendar-outline'} 
+---+              size={12} 
+---+              color={Colors.light.textSecondary} 
+---+            />
+---+            <Text style={styles.resetText}>{loop.reset_rule}</Text>
+---+          </View>
+---+        </View>
+---+      </TouchableOpacity>
+---+    );
+---+  };
+---+
+---+  if (loading) {
+---+    return (
+---+      <SafeAreaView style={styles.container}>
+---+        <View style={styles.loadingContainer}>
+---+          <Text style={styles.loadingText}>Loading your loops...</Text>
+---+        </View>
+---+      </SafeAreaView>
+---+    );
+---+  }
+--- 
+---   return (
+----    <View style={styles.container}>
+----      <Image
+----        source={require("../assets/images/app-image.png")}
+----        style={styles.image}
+----      />
+----    </View>
+---+    <SafeAreaView style={styles.container}>
+---+      <View style={styles.header}>
+---+        <View style={styles.headerLeft}>
+---+          <View style={styles.logoContainer}>
+---+            <Ionicons name="sync" size={24} color={Colors.light.primary} />
+---+          </View>
+---+          <View>
+---+            <Text style={styles.welcomeText}>Welcome back</Text>
+---+            <Text style={styles.userName}>{user?.name}</Text>
+---+          </View>
+---+        </View>
+---+        <TouchableOpacity onPress={logout} style={styles.logoutButton}>
+---+          <Ionicons name="log-out-outline" size={24} color={Colors.light.textSecondary} />
+---+        </TouchableOpacity>
+---+      </View>
+---+
+---+      <ScrollView 
+---+        style={styles.content}
+---+        refreshControl={
+---+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+---+        }
+---+      >
+---+        <View style={styles.sectionHeader}>
+---+          <Text style={styles.sectionTitle}>My Loops</Text>
+---+          <TouchableOpacity 
+---+            style={styles.createButton}
+---+            onPress={() => router.push('/create-loop')}
+---+          >
+---+            <Ionicons name="add" size={20} color={Colors.light.background} />
+---+            <Text style={styles.createButtonText}>New Loop</Text>
+---+          </TouchableOpacity>
+---+        </View>
+---+
+---+        {loops.length === 0 ? (
+---+          <View style={styles.emptyState}>
+---+            <Ionicons name="sync" size={48} color={Colors.light.textSecondary} />
+---+            <Text style={styles.emptyTitle}>No loops yet</Text>
+---+            <Text style={styles.emptyDescription}>
+---+              Create your first loop to start organizing your routines and recurring tasks.
+---+            </Text>
+---+            <TouchableOpacity 
+---+              style={styles.emptyCreateButton}
+---+              onPress={() => router.push('/create-loop')}
+---+            >
+---+              <Text style={styles.emptyCreateButtonText}>Create Your First Loop</Text>
+---+            </TouchableOpacity>
+---+          </View>
+---+        ) : (
+---+          <View style={styles.loopsContainer}>
+---+            {loops.map(renderLoopCard)}
+---+          </View>
+---+        )}
+---+      </ScrollView>
+---+    </SafeAreaView>
+---   );
+----}
+---+};
+--- 
+--- const styles = StyleSheet.create({
+---   container: {
+---     flex: 1,
+----    backgroundColor: "#0c0c0c",
+----    alignItems: "center",
+----    justifyContent: "center",
+---+    backgroundColor: Colors.light.background,
+---+  },
+---+  loadingContainer: {
+---+    flex: 1,
+---+    justifyContent: 'center',
+---+    alignItems: 'center',
+---+  },
+---+  loadingText: {
+---+    fontSize: 16,
+---+    color: Colors.light.textSecondary,
+---+  },
+---+  header: {
+---+    flexDirection: 'row',
+---+    justifyContent: 'space-between',
+---+    alignItems: 'center',
+---+    paddingHorizontal: 24,
+---+    paddingVertical: 16,
+---+    backgroundColor: Colors.light.background,
+---+  },
+---+  headerLeft: {
+---+    flexDirection: 'row',
+---+    alignItems: 'center',
+---+  },
+---+  logoContainer: {
+---+    width: 40,
+---+    height: 40,
+---+    borderRadius: 20,
+---+    backgroundColor: Colors.light.backgroundSecondary,
+---+    justifyContent: 'center',
+---+    alignItems: 'center',
+---+    marginRight: 12,
+---+  },
+---+  welcomeText: {
+---+    fontSize: 14,
+---+    color: Colors.light.textSecondary,
+---+  },
+---+  userName: {
+---+    fontSize: 18,
+---+    fontWeight: '600',
+---+    color: Colors.light.text,
+---+  },
+---+  logoutButton: {
+---+    padding: 8,
+---+  },
+---+  content: {
+---+    flex: 1,
+---+    paddingHorizontal: 24,
+---+  },
+---+  sectionHeader: {
+---+    flexDirection: 'row',
+---+    justifyContent: 'space-between',
+---+    alignItems: 'center',
+---+    marginBottom: 16,
+---+  },
+---+  sectionTitle: {
+---+    fontSize: 24,
+---+    fontWeight: 'bold',
+---+    color: Colors.light.text,
+---+  },
+---+  createButton: {
+---+    flexDirection: 'row',
+---+    alignItems: 'center',
+---+    backgroundColor: Colors.light.primary,
+---+    paddingHorizontal: 16,
+---+    paddingVertical: 8,
+---+    borderRadius: 20,
+---   },
+----  image: {
+----    width: "100%",
+----    height: "100%",
+----    resizeMode: "contain",
+---+  createButtonText: {
+---+    fontSize: 14,
+---+    fontWeight: '600',
+---+    color: Colors.light.background,
+---+    marginLeft: 4,
+---+  },
+---+  emptyState: {
+---+    alignItems: 'center',
+---+    paddingVertical: 60,
+---+  },
+---+  emptyTitle: {
+---+    fontSize: 20,
+---+    fontWeight: '600',
+---+    color: Colors.light.text,
+---+    marginTop: 16,
+---+    marginBottom: 8,
+---+  },
+---+  emptyDescription: {
+---+    fontSize: 16,
+---+    color: Colors.light.textSecondary,
+---+    textAlign: 'center',
+---+    marginBottom: 24,
+---+    lineHeight: 24,
+---+  },
+---+  emptyCreateButton: {
+---+    backgroundColor: Colors.light.secondary,
+---+    paddingHorizontal: 24,
+---+    paddingVertical: 12,
+---+    borderRadius: 24,
+---+  },
+---+  emptyCreateButtonText: {
+---+    fontSize: 16,
+---+    fontWeight: '600',
+---+    color: Colors.light.background,
+---+  },
+---+  loopsContainer: {
+---+    paddingBottom: 24,
+---+  },
+---+  loopCard: {
+---+    backgroundColor: Colors.light.surface,
+---+    borderRadius: 16,
+---+    padding: 16,
+---+    marginBottom: 16,
+---+    borderLeftWidth: 4,
+---+    shadowColor: '#000',
+---+    shadowOffset: { width: 0, height: 2 },
+---+    shadowOpacity: 0.1,
+---+    shadowRadius: 4,
+---+    elevation: 3,
+---+  },
+---+  loopHeader: {
+---+    flexDirection: 'row',
+---+    justifyContent: 'space-between',
+---+    alignItems: 'flex-start',
+---+    marginBottom: 12,
+---+  },
+---+  loopInfo: {
+---+    flex: 1,
+---+    marginRight: 16,
+---+  },
+---+  loopName: {
+---+    fontSize: 18,
+---+    fontWeight: '600',
+---+    color: Colors.light.text,
+---+    marginBottom: 4,
+---+  },
+---+  loopDescription: {
+---+    fontSize: 14,
+---+    color: Colors.light.textSecondary,
+---+    lineHeight: 20,
+---+  },
+---+  loopStats: {
+---+    alignItems: 'flex-end',
+---+  },
+---+  loopProgress: {
+---+    fontSize: 20,
+---+    fontWeight: 'bold',
+---+    color: Colors.light.text,
+---+  },
+---+  loopTaskCount: {
+---+    fontSize: 12,
+---+    color: Colors.light.textSecondary,
+---+    marginTop: 2,
+---+  },
+---+  progressContainer: {
+---+    marginTop: 8,
+---+  },
+---+  progressBackground: {
+---+    height: 6,
+---+    backgroundColor: Colors.light.backgroundSecondary,
+---+    borderRadius: 3,
+---+    overflow: 'hidden',
+---+  },
+---+  progressFill: {
+---+    height: '100%',
+---+    borderRadius: 3,
+---+  },
+---+  resetInfo: {
+---+    flexDirection: 'row',
+---+    alignItems: 'center',
+---+    marginTop: 8,
+---+  },
+---+  resetText: {
+---+    fontSize: 12,
+---+    color: Colors.light.textSecondary,
+---+    marginLeft: 4,
+---+    textTransform: 'capitalize',
+---   },
+--- });
+---+
+---+export default Dashboard;
+--diff --git a/test_result.md b/test_result.md
+--index 2619701..fec16a4 100644
+----- a/test_result.md
+--+++ b/test_result.md
+--@@ -107,51 +107,63 @@ user_problem_statement: "Build Doloop - A looping to-do list app for routines an
+-- backend:
+--   - task: "User Authentication System"
+--     implemented: true
+---    working: "NA"
+--+    working: true
+--     file: "server.py"
+--     stuck_count: 0
+--     priority: "high"
+---    needs_retesting: true
+--+    needs_retesting: false
+--     status_history:
+--       - working: "NA"
+--         agent: "main"
+--         comment: "Implemented JWT-based auth with bcrypt password hashing, registration and login endpoints"
+--+      - working: true
+--+        agent: "testing"
+--+        comment: "✅ COMPREHENSIVE TESTING PASSED: Registration endpoint creates users with JWT tokens, login validates credentials correctly, duplicate email registration properly rejected (400 status), invalid credentials properly rejected (401 status). JWT Bearer token authentication working correctly across all protected endpoints."
 -- 
----const EXPO_PUBLIC_BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
---+const API_BASE_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || '';
+--   - task: "MongoDB Models Setup"
+--     implemented: true
+---    working: "NA"
+--+    working: true
+--     file: "server.py"
+--     stuck_count: 0
+--     priority: "high"
+---    needs_retesting: true
+--+    needs_retesting: false
+--     status_history:
+--       - working: "NA"
+--         agent: "main"
+--         comment: "Created Pydantic models for User, Loop, Task with proper validation"
+--+      - working: true
+--+        agent: "testing"
+--+        comment: "✅ COMPREHENSIVE TESTING PASSED: Pydantic models working correctly - User model validates email/password/name, Loop model validates name/color/reset_rule patterns, Task model validates description/type patterns. All data validation and serialization working properly with MongoDB ObjectId to string conversion."
 -- 
----export default function Index() {
----  console.log(EXPO_PUBLIC_BACKEND_URL, "EXPO_PUBLIC_BACKEND_URL");
---+const Dashboard: React.FC = () => {
---+  const { user, token, logout } = useAuth();
---+  const [loops, setLoops] = useState<Loop[]>([]);
---+  const [loading, setLoading] = useState(true);
---+  const [refreshing, setRefreshing] = useState(false);
---+
---+  const fetchLoops = async () => {
---+    try {
---+      const response = await fetch(`${API_BASE_URL}/api/loops`, {
---+        headers: {
---+          'Authorization': `Bearer ${token}`,
---+          'Content-Type': 'application/json',
---+        },
---+      });
---+
---+      if (response.ok) {
---+        const data = await response.json();
---+        setLoops(data);
---+      }
---+    } catch (error) {
---+      console.log('Error fetching loops:', error);
---+    } finally {
---+      setLoading(false);
---+      setRefreshing(false);
---+    }
---+  };
---+
---+  useEffect(() => {
---+    fetchLoops();
---+  }, []);
---+
---+  const onRefresh = () => {
---+    setRefreshing(true);
---+    fetchLoops();
---+  };
---+
---+  const renderLoopCard = (loop: Loop) => {
---+    const progressWidth = `${loop.progress || 0}%`;
---+    
---+    return (
---+      <TouchableOpacity
---+        key={loop.id}
---+        style={[styles.loopCard, { borderLeftColor: loop.color }]}
---+        onPress={() => router.push(`/loop/${loop.id}`)}
---+      >
---+        <View style={styles.loopHeader}>
---+          <View style={styles.loopInfo}>
---+            <Text style={styles.loopName}>{loop.name}</Text>
---+            {loop.description && (
---+              <Text style={styles.loopDescription}>{loop.description}</Text>
---+            )}
---+          </View>
---+          <View style={styles.loopStats}>
---+            <Text style={styles.loopProgress}>{loop.progress || 0}%</Text>
---+            <Text style={styles.loopTaskCount}>
---+              {loop.completed_tasks || 0}/{loop.total_tasks || 0}
---+            </Text>
---+          </View>
---+        </View>
---+        
---+        <View style={styles.progressContainer}>
---+          <View style={styles.progressBackground}>
---+            <View 
---+              style={[styles.progressFill, { width: progressWidth, backgroundColor: loop.color }]} 
---+            />
---+          </View>
---+          <View style={styles.resetInfo}>
---+            <Ionicons 
---+              name={loop.reset_rule === 'manual' ? 'hand-left' : loop.reset_rule === 'daily' ? 'calendar' : 'calendar-outline'} 
---+              size={12} 
---+              color={Colors.light.textSecondary} 
---+            />
---+            <Text style={styles.resetText}>{loop.reset_rule}</Text>
---+          </View>
---+        </View>
---+      </TouchableOpacity>
---+    );
---+  };
---+
---+  if (loading) {
---+    return (
---+      <SafeAreaView style={styles.container}>
---+        <View style={styles.loadingContainer}>
---+          <Text style={styles.loadingText}>Loading your loops...</Text>
---+        </View>
---+      </SafeAreaView>
---+    );
---+  }
+--   - task: "Loop CRUD API"
+--     implemented: true
+---    working: "NA"
+--+    working: true
+--     file: "server.py"
+--     stuck_count: 0
+--     priority: "high"
+---    needs_retesting: true
+--+    needs_retesting: false
+--     status_history:
+--       - working: "NA"
+--         agent: "main"
+--         comment: "Implemented GET /loops, POST /loops with authentication and progress calculation"
+--+      - working: true
+--+        agent: "testing"
+--+        comment: "✅ COMPREHENSIVE TESTING PASSED: GET /api/loops returns user's loops with progress calculation (0% initially), POST /api/loops creates loops with proper validation (name, description, color, reset_rule). Authentication required for both endpoints - unauthenticated requests properly rejected with 401/403. Progress calculation working correctly showing total_tasks, completed_tasks, and percentage."
 -- 
---   return (
----    <View style={styles.container}>
----      <Image
----        source={require("../assets/images/app-image.png")}
----        style={styles.image}
----      />
----    </View>
---+    <SafeAreaView style={styles.container}>
---+      <View style={styles.header}>
---+        <View style={styles.headerLeft}>
---+          <View style={styles.logoContainer}>
---+            <Ionicons name="sync" size={24} color={Colors.light.primary} />
---+          </View>
---+          <View>
---+            <Text style={styles.welcomeText}>Welcome back</Text>
---+            <Text style={styles.userName}>{user?.name}</Text>
---+          </View>
---+        </View>
---+        <TouchableOpacity onPress={logout} style={styles.logoutButton}>
---+          <Ionicons name="log-out-outline" size={24} color={Colors.light.textSecondary} />
---+        </TouchableOpacity>
---+      </View>
---+
---+      <ScrollView 
---+        style={styles.content}
---+        refreshControl={
---+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
---+        }
---+      >
---+        <View style={styles.sectionHeader}>
---+          <Text style={styles.sectionTitle}>My Loops</Text>
---+          <TouchableOpacity 
---+            style={styles.createButton}
---+            onPress={() => router.push('/create-loop')}
---+          >
---+            <Ionicons name="add" size={20} color={Colors.light.background} />
---+            <Text style={styles.createButtonText}>New Loop</Text>
---+          </TouchableOpacity>
---+        </View>
---+
---+        {loops.length === 0 ? (
---+          <View style={styles.emptyState}>
---+            <Ionicons name="sync" size={48} color={Colors.light.textSecondary} />
---+            <Text style={styles.emptyTitle}>No loops yet</Text>
---+            <Text style={styles.emptyDescription}>
---+              Create your first loop to start organizing your routines and recurring tasks.
---+            </Text>
---+            <TouchableOpacity 
---+              style={styles.emptyCreateButton}
---+              onPress={() => router.push('/create-loop')}
---+            >
---+              <Text style={styles.emptyCreateButtonText}>Create Your First Loop</Text>
---+            </TouchableOpacity>
---+          </View>
---+        ) : (
---+          <View style={styles.loopsContainer}>
---+            {loops.map(renderLoopCard)}
---+          </View>
---+        )}
---+      </ScrollView>
---+    </SafeAreaView>
---   );
----}
---+};
+--   - task: "Task Management API"
+--     implemented: true
+---    working: "NA"
+--+    working: true
+--     file: "server.py"
+--     stuck_count: 0
+--     priority: "high"
+---    needs_retesting: true
+--+    needs_retesting: false
+--     status_history:
+--       - working: "NA"
+--         agent: "main"
+--         comment: "Implemented task CRUD, task completion, and reloop functionality with proper auth checks"
+--+      - working: true
+--+        agent: "testing"
+--+        comment: "✅ COMPREHENSIVE TESTING PASSED: GET /api/loops/{loop_id}/tasks retrieves tasks with proper ordering, POST /api/loops/{loop_id}/tasks creates both recurring and one-time tasks, PUT /api/tasks/{task_id}/complete marks tasks as completed with timestamp, PUT /api/loops/{loop_id}/reloop resets recurring tasks to pending and archives completed one-time tasks. All endpoints require authentication and verify loop ownership. Task ordering and status management working correctly."
 -- 
--- const styles = StyleSheet.create({
---   container: {
---     flex: 1,
----    backgroundColor: "#0c0c0c",
----    alignItems: "center",
----    justifyContent: "center",
---+    backgroundColor: Colors.light.background,
---+  },
---+  loadingContainer: {
---+    flex: 1,
---+    justifyContent: 'center',
---+    alignItems: 'center',
---+  },
---+  loadingText: {
---+    fontSize: 16,
---+    color: Colors.light.textSecondary,
---+  },
---+  header: {
---+    flexDirection: 'row',
---+    justifyContent: 'space-between',
---+    alignItems: 'center',
---+    paddingHorizontal: 24,
---+    paddingVertical: 16,
---+    backgroundColor: Colors.light.background,
---+  },
---+  headerLeft: {
---+    flexDirection: 'row',
---+    alignItems: 'center',
---+  },
---+  logoContainer: {
---+    width: 40,
---+    height: 40,
---+    borderRadius: 20,
---+    backgroundColor: Colors.light.backgroundSecondary,
---+    justifyContent: 'center',
---+    alignItems: 'center',
---+    marginRight: 12,
---+  },
---+  welcomeText: {
---+    fontSize: 14,
---+    color: Colors.light.textSecondary,
---+  },
---+  userName: {
---+    fontSize: 18,
---+    fontWeight: '600',
---+    color: Colors.light.text,
---+  },
---+  logoutButton: {
---+    padding: 8,
---+  },
---+  content: {
---+    flex: 1,
---+    paddingHorizontal: 24,
---+  },
---+  sectionHeader: {
---+    flexDirection: 'row',
---+    justifyContent: 'space-between',
---+    alignItems: 'center',
---+    marginBottom: 16,
---+  },
---+  sectionTitle: {
---+    fontSize: 24,
---+    fontWeight: 'bold',
---+    color: Colors.light.text,
---+  },
---+  createButton: {
---+    flexDirection: 'row',
---+    alignItems: 'center',
---+    backgroundColor: Colors.light.primary,
---+    paddingHorizontal: 16,
---+    paddingVertical: 8,
---+    borderRadius: 20,
---   },
----  image: {
----    width: "100%",
----    height: "100%",
----    resizeMode: "contain",
---+  createButtonText: {
---+    fontSize: 14,
---+    fontWeight: '600',
---+    color: Colors.light.background,
---+    marginLeft: 4,
---+  },
---+  emptyState: {
---+    alignItems: 'center',
---+    paddingVertical: 60,
---+  },
---+  emptyTitle: {
---+    fontSize: 20,
---+    fontWeight: '600',
---+    color: Colors.light.text,
---+    marginTop: 16,
---+    marginBottom: 8,
---+  },
---+  emptyDescription: {
---+    fontSize: 16,
---+    color: Colors.light.textSecondary,
---+    textAlign: 'center',
---+    marginBottom: 24,
---+    lineHeight: 24,
---+  },
---+  emptyCreateButton: {
---+    backgroundColor: Colors.light.secondary,
---+    paddingHorizontal: 24,
---+    paddingVertical: 12,
---+    borderRadius: 24,
---+  },
---+  emptyCreateButtonText: {
---+    fontSize: 16,
---+    fontWeight: '600',
---+    color: Colors.light.background,
---+  },
---+  loopsContainer: {
---+    paddingBottom: 24,
---+  },
---+  loopCard: {
---+    backgroundColor: Colors.light.surface,
---+    borderRadius: 16,
---+    padding: 16,
---+    marginBottom: 16,
---+    borderLeftWidth: 4,
---+    shadowColor: '#000',
---+    shadowOffset: { width: 0, height: 2 },
---+    shadowOpacity: 0.1,
---+    shadowRadius: 4,
---+    elevation: 3,
---+  },
---+  loopHeader: {
---+    flexDirection: 'row',
---+    justifyContent: 'space-between',
---+    alignItems: 'flex-start',
---+    marginBottom: 12,
---+  },
---+  loopInfo: {
---+    flex: 1,
---+    marginRight: 16,
---+  },
---+  loopName: {
---+    fontSize: 18,
---+    fontWeight: '600',
---+    color: Colors.light.text,
---+    marginBottom: 4,
---+  },
---+  loopDescription: {
---+    fontSize: 14,
---+    color: Colors.light.textSecondary,
---+    lineHeight: 20,
---+  },
---+  loopStats: {
---+    alignItems: 'flex-end',
---+  },
---+  loopProgress: {
---+    fontSize: 20,
---+    fontWeight: 'bold',
---+    color: Colors.light.text,
---+  },
---+  loopTaskCount: {
---+    fontSize: 12,
---+    color: Colors.light.textSecondary,
---+    marginTop: 2,
---+  },
---+  progressContainer: {
---+    marginTop: 8,
---+  },
---+  progressBackground: {
---+    height: 6,
---+    backgroundColor: Colors.light.backgroundSecondary,
---+    borderRadius: 3,
---+    overflow: 'hidden',
---+  },
---+  progressFill: {
---+    height: '100%',
---+    borderRadius: 3,
---+  },
---+  resetInfo: {
---+    flexDirection: 'row',
---+    alignItems: 'center',
---+    marginTop: 8,
---+  },
---+  resetText: {
---+    fontSize: 12,
---+    color: Colors.light.textSecondary,
---+    marginLeft: 4,
---+    textTransform: 'capitalize',
---   },
--- });
---+
---+export default Dashboard;
--diff --git a/test_result.md b/test_result.md
--index 2619701..fec16a4 100644
----- a/test_result.md
--+++ b/test_result.md
--@@ -107,51 +107,63 @@ user_problem_statement: "Build Doloop - A looping to-do list app for routines an
-- backend:
--   - task: "User Authentication System"
--     implemented: true
---    working: "NA"
--+    working: true
--     file: "server.py"
--     stuck_count: 0
--     priority: "high"
---    needs_retesting: true
--+    needs_retesting: false
--     status_history:
--       - working: "NA"
--         agent: "main"
--         comment: "Implemented JWT-based auth with bcrypt password hashing, registration and login endpoints"
--+      - working: true
--+        agent: "testing"
--+        comment: "✅ COMPREHENSIVE TESTING PASSED: Registration endpoint creates users with JWT tokens, login validates credentials correctly, duplicate email registration properly rejected (400 status), invalid credentials properly rejected (401 status). JWT Bearer token authentication working correctly across all protected endpoints."
-- 
--   - task: "MongoDB Models Setup"
--     implemented: true
---    working: "NA"
--+    working: true
--     file: "server.py"
--     stuck_count: 0
--     priority: "high"
---    needs_retesting: true
--+    needs_retesting: false
--     status_history:
--       - working: "NA"
--         agent: "main"
--         comment: "Created Pydantic models for User, Loop, Task with proper validation"
--+      - working: true
--+        agent: "testing"
--+        comment: "✅ COMPREHENSIVE TESTING PASSED: Pydantic models working correctly - User model validates email/password/name, Loop model validates name/color/reset_rule patterns, Task model validates description/type patterns. All data validation and serialization working properly with MongoDB ObjectId to string conversion."
-- 
--   - task: "Loop CRUD API"
--     implemented: true
---    working: "NA"
--+    working: true
--     file: "server.py"
--     stuck_count: 0
--     priority: "high"
---    needs_retesting: true
--+    needs_retesting: false
--     status_history:
--       - working: "NA"
--         agent: "main"
--         comment: "Implemented GET /loops, POST /loops with authentication and progress calculation"
--+      - working: true
--+        agent: "testing"
--+        comment: "✅ COMPREHENSIVE TESTING PASSED: GET /api/loops returns user's loops with progress calculation (0% initially), POST /api/loops creates loops with proper validation (name, description, color, reset_rule). Authentication required for both endpoints - unauthenticated requests properly rejected with 401/403. Progress calculation working correctly showing total_tasks, completed_tasks, and percentage."
-- 
--   - task: "Task Management API"
--     implemented: true
---    working: "NA"
--+    working: true
--     file: "server.py"
--     stuck_count: 0
--     priority: "high"
---    needs_retesting: true
--+    needs_retesting: false
--     status_history:
--       - working: "NA"
--         agent: "main"
--         comment: "Implemented task CRUD, task completion, and reloop functionality with proper auth checks"
--+      - working: true
--+        agent: "testing"
--+        comment: "✅ COMPREHENSIVE TESTING PASSED: GET /api/loops/{loop_id}/tasks retrieves tasks with proper ordering, POST /api/loops/{loop_id}/tasks creates both recurring and one-time tasks, PUT /api/tasks/{task_id}/complete marks tasks as completed with timestamp, PUT /api/loops/{loop_id}/reloop resets recurring tasks to pending and archives completed one-time tasks. All endpoints require authentication and verify loop ownership. Task ordering and status management working correctly."
-- 
-- frontend:
--   - task: "Authentication Screens"
--@@ -205,19 +217,21 @@ frontend:
-- metadata:
--   created_by: "main_agent"
--   version: "1.0"
---  test_sequence: 0
--+  test_sequence: 1
--   run_ui: false
-- 
-- test_plan:
--   current_focus:
--     - "Color Palette Integration"
---    - "User Authentication System" 
---    - "MongoDB Models Setup"
--     - "Authentication Screens"
--+    - "Dashboard Screen"
--+    - "Loop Management Screens"
--   stuck_tasks: []
--   test_all: false
--   test_priority: "high_first"
-- 
-- agent_communication:
--   - agent: "main"
---    message: "Completed core backend implementation with JWT auth, loop/task CRUD APIs. Frontend has auth screens, dashboard, and create-loop screen. Ready for backend testing to verify all API endpoints work properly."
--\ No newline at end of file
--+    message: "Completed core backend implementation with JWT auth, loop/task CRUD APIs. Frontend has auth screens, dashboard, and create-loop screen. Ready for backend testing to verify all API endpoints work properly."
--+  - agent: "testing"
--+    message: "✅ BACKEND TESTING COMPLETE: All 4 backend tasks are now working correctly. Comprehensive testing performed on authentication system (registration/login with JWT), MongoDB models (User/Loop/Task with validation), Loop CRUD API (GET/POST with auth and progress calculation), and Task Management API (CRUD operations, task completion, reloop functionality). All endpoints properly handle authentication, authorization, data validation, and error cases. Backend API is fully functional and ready for frontend integration. 14/14 tests passed with 100% success rate."
--\ No newline at end of file
+-- frontend:
+--   - task: "Authentication Screens"
+--@@ -205,19 +217,21 @@ frontend:
+-- metadata:
+--   created_by: "main_agent"
+--   version: "1.0"
+---  test_sequence: 0
+--+  test_sequence: 1
+--   run_ui: false
+-- 
+-- test_plan:
+--   current_focus:
+--     - "Color Palette Integration"
+---    - "User Authentication System" 
+---    - "MongoDB Models Setup"
+--     - "Authentication Screens"
+--+    - "Dashboard Screen"
+--+    - "Loop Management Screens"
+--   stuck_tasks: []
+--   test_all: false
+--   test_priority: "high_first"
+-- 
+-- agent_communication:
+--   - agent: "main"
+---    message: "Completed core backend implementation with JWT auth, loop/task CRUD APIs. Frontend has auth screens, dashboard, and create-loop screen. Ready for backend testing to verify all API endpoints work properly."
+--\ No newline at end of file
+--+    message: "Completed core backend implementation with JWT auth, loop/task CRUD APIs. Frontend has auth screens, dashboard, and create-loop screen. Ready for backend testing to verify all API endpoints work properly."
+--+  - agent: "testing"
+--+    message: "✅ BACKEND TESTING COMPLETE: All 4 backend tasks are now working correctly. Comprehensive testing performed on authentication system (registration/login with JWT), MongoDB models (User/Loop/Task with validation), Loop CRUD API (GET/POST with auth and progress calculation), and Task Management API (CRUD operations, task completion, reloop functionality). All endpoints properly handle authentication, authorization, data validation, and error cases. Backend API is fully functional and ready for frontend integration. 14/14 tests passed with 100% success rate."
+--\ No newline at end of file
