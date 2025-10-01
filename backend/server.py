@@ -407,6 +407,150 @@ async def reloop(loop_id: str, current_user = Depends(get_current_user)):
     
     return {"message": "Loop reset successfully"}
 
+# AI Routes
+@api_router.post("/ai/generate-loop")
+async def ai_generate_loop(request: AILoopRequest, current_user = Depends(get_current_user)):
+    """AI-powered loop generation from natural language description"""
+    try:
+        chat = await get_ai_chat()
+        
+        prompt = f"""Create a loop for: "{request.description}"
+Category: {request.category or 'general'}
+
+Generate a JSON response with this exact structure:
+{{
+    "name": "Loop name (max 50 chars)",
+    "description": "Brief description",
+    "color": "#{request.category and '#FFC93A' if request.category == 'personal' else '#FF5999' if request.category == 'work' else '#00CAD1' if request.category == 'shared' else '#FFC93A'}",
+    "reset_rule": "daily|weekly|manual",
+    "tasks": [
+        {{
+            "description": "Task description (max 50 chars)",
+            "type": "recurring|one-time"
+        }}
+    ]
+}}
+
+Make 5-8 practical, actionable tasks. Consider what would make sense to repeat."""
+
+        user_message = UserMessage(text=prompt)
+        response = await chat.send_message(user_message)
+        
+        # Parse AI response
+        import json
+        try:
+            ai_data = json.loads(response)
+        except:
+            raise HTTPException(status_code=500, detail="AI response parsing failed")
+        
+        return ai_data
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"AI generation failed: {str(e)}")
+
+@api_router.post("/ai/suggest-tasks")
+async def ai_suggest_tasks(request: AISuggestTasksRequest, current_user = Depends(get_current_user)):
+    """AI-powered task suggestions for an existing loop"""
+    try:
+        # Get loop info
+        loop = await db.loops.find_one({"_id": ObjectId(request.loop_id), "owner_id": current_user["_id"]})
+        if not loop:
+            raise HTTPException(status_code=404, detail="Loop not found")
+        
+        # Get existing tasks
+        existing_tasks = await db.tasks.find({"loop_id": request.loop_id}).to_list(100)
+        task_descriptions = [task["description"] for task in existing_tasks]
+        
+        chat = await get_ai_chat()
+        
+        prompt = f"""Suggest additional tasks for this loop:
+Name: {loop['name']}
+Description: {loop.get('description', '')}
+Reset Rule: {loop['reset_rule']}
+Context: {request.context or ''}
+
+Existing tasks:
+{chr(10).join(['- ' + desc for desc in task_descriptions])}
+
+Generate a JSON response with 3-5 new task suggestions:
+{{
+    "suggestions": [
+        {{
+            "description": "Task description (max 50 chars)",
+            "type": "recurring|one-time",
+            "reason": "Brief explanation why this task fits"
+        }}
+    ]
+}}
+
+Don't duplicate existing tasks. Focus on gaps or improvements."""
+
+        user_message = UserMessage(text=prompt)
+        response = await chat.send_message(user_message)
+        
+        # Parse AI response
+        import json
+        try:
+            ai_data = json.loads(response)
+        except:
+            raise HTTPException(status_code=500, detail="AI response parsing failed")
+        
+        return ai_data
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"AI suggestion failed: {str(e)}")
+
+@api_router.post("/ai/optimize-loop")
+async def ai_optimize_loop(request: AIOptimizeLoopRequest, current_user = Depends(get_current_user)):
+    """AI-powered loop optimization suggestions"""
+    try:
+        # Get loop and tasks
+        loop = await db.loops.find_one({"_id": ObjectId(request.loop_id), "owner_id": current_user["_id"]})
+        if not loop:
+            raise HTTPException(status_code=404, detail="Loop not found")
+        
+        tasks = await db.tasks.find({"loop_id": request.loop_id}).sort("order", 1).to_list(100)
+        
+        chat = await get_ai_chat()
+        
+        prompt = f"""Analyze and optimize this loop:
+Name: {loop['name']}
+Description: {loop.get('description', '')}
+Reset Rule: {loop['reset_rule']}
+
+Tasks (in current order):
+{chr(10).join([f"{i+1}. {task['description']} ({task['type']})" for i, task in enumerate(tasks)])}
+
+Generate optimization suggestions in JSON:
+{{
+    "improvements": [
+        {{
+            "type": "reorder|add|remove|modify",
+            "suggestion": "Specific improvement suggestion",
+            "reason": "Why this would help"
+        }}
+    ],
+    "efficiency_score": 85,
+    "summary": "Overall assessment and key recommendations"
+}}
+
+Focus on logical task ordering, missing steps, redundancies, and time efficiency."""
+
+        user_message = UserMessage(text=prompt)
+        response = await chat.send_message(user_message)
+        
+        # Parse AI response
+        import json
+        try:
+            ai_data = json.loads(response)
+        except:
+            raise HTTPException(status_code=500, detail="AI response parsing failed")
+        
+        return ai_data
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"AI optimization failed: {str(e)}")
+
 # Test route
 @api_router.get("/")
 async def root():
