@@ -1,6 +1,7 @@
 import React from 'react';
 import { Stack } from 'expo-router';
 import { AuthProvider, useAuth } from '../contexts/AuthContext';
+import { ThemeProvider } from '../contexts/ThemeContext';
 import FlashMessage from 'react-native-flash-message';
 import AuthScreen from './auth';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
