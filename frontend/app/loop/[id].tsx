@@ -1258,7 +1258,30 @@ const LoopDetailScreen: React.FC = () => {
                       source={{ uri: attachment.uri }} 
                       style={styles.imagePreview}
                       resizeMode="cover"
+                      onError={(error) => {
+                        console.log('Image loading error:', error, 'URI:', attachment.uri);
+                      }}
+                      onLoad={() => {
+                        console.log('Image loaded successfully:', attachment.uri);
+                      }}
+                      onLoadStart={() => {
+                        console.log('Image loading started:', attachment.uri);
+                      }}
                     />
+                    {/* Fallback content if image doesn't load */}
+                    <View style={styles.imageFallback}>
+                      <Ionicons 
+                        name="image-outline" 
+                        size={48} 
+                        color={Colors.light.textSecondary} 
+                      />
+                      <Text style={styles.imageFallbackText}>
+                        {attachment.name || 'Image Preview'}
+                      </Text>
+                      <Text style={styles.imageFallbackSubtext}>
+                        Tap expand to view
+                      </Text>
+                    </View>
                   </View>
                 )}
                 
