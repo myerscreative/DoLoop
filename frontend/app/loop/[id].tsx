@@ -723,6 +723,22 @@ const LoopDetailScreen: React.FC = () => {
               label="Add Tag" 
               onPress={() => handleAddTag(task.id)}
             />
+            {task.attachments && task.attachments.length > 0 && (
+              <TaskActionRow 
+                icon="eye-outline" 
+                label="View Attachments" 
+                onPress={() => {
+                  // Show attachment list
+                  Alert.alert(
+                    'Attachments',
+                    task.attachments?.map((att: any, idx: number) => 
+                      `${idx + 1}. ${att.name || `File ${idx + 1}`}`
+                    ).join('\n') || 'No attachments'
+                  );
+                }}
+                value={`${task.attachments.length} file(s)`}
+              />
+            )}
             <TaskActionRow 
               icon="attach-outline" 
               label="Attach File" 
