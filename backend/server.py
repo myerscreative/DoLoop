@@ -391,9 +391,15 @@ async def soft_delete_loop(loop_id: str, current_user = Depends(get_current_user
 async def restore_loop(loop_id: str, current_user = Depends(get_current_user)):
     """Restore a soft-deleted loop"""
     try:
+        # Validate ObjectId format
+        try:
+            object_id = ObjectId(loop_id)
+        except:
+            raise HTTPException(status_code=404, detail="Deleted loop not found")
+        
         # Verify loop ownership and that it's deleted
         loop = await db.loops.find_one({
-            "_id": ObjectId(loop_id), 
+            "_id": object_id, 
             "owner_id": current_user["_id"],
             "is_deleted": True
         })
@@ -402,7 +408,7 @@ async def restore_loop(loop_id: str, current_user = Depends(get_current_user)):
         
         # Restore the loop
         await db.loops.update_one(
-            {"_id": ObjectId(loop_id)},
+            {"_id": object_id},
             {
                 "$unset": {
                     "is_deleted": "",
@@ -416,6 +422,8 @@ async def restore_loop(loop_id: str, current_user = Depends(get_current_user)):
         
         return {"message": "Loop restored successfully"}
         
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to restore loop: {str(e)}")
 
