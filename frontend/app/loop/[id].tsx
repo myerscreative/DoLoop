@@ -771,64 +771,21 @@ const LoopDetailScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header styled like your design concept */}
-      <View style={[styles.header, { backgroundColor: loop.color }]}>
+      {/* Clean Header Design */}
+      <View style={[styles.cleanHeader, { backgroundColor: loop.color }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color={Colors.light.background} />
-        </TouchableOpacity>
-        <View style={styles.headerContent}>
-          <View style={styles.loopIcon}>
-            <Ionicons name="sync" size={20} color={loop.color} />
-          </View>
-          <Text style={styles.headerTitle}>{loop.name}</Text>
-        </View>
-        <TouchableOpacity onPress={handleReloop} style={styles.headerAction}>
-          <Ionicons name="refresh" size={24} color={Colors.light.background} />
+          <Ionicons name="chevron-back" size={24} color={Colors.light.background} />
         </TouchableOpacity>
         
-        <TouchableOpacity 
-          onPress={() => {
-            Alert.alert(
-              'Delete Loop',
-              'Are you sure you want to delete this loop? This action cannot be undone.',
-              [
-                { text: 'Cancel', style: 'cancel' },
-                {
-                  text: 'Delete',
-                  style: 'destructive',
-                  onPress: async () => {
-                    try {
-                      const response = await fetch(`${API_BASE_URL}/api/loops/${id}`, {
-                        method: 'DELETE',
-                        headers: {
-                          'Authorization': `Bearer ${token}`,
-                          'Content-Type': 'application/json',
-                        },
-                      });
-                      
-                      if (response.ok) {
-                        showMessage({
-                          message: 'Loop deleted successfully!',
-                          type: 'success',
-                        });
-                        router.replace('/');
-                      } else {
-                        throw new Error('Delete failed');
-                      }
-                    } catch (error) {
-                      showMessage({
-                        message: 'Failed to delete loop',
-                        type: 'danger',
-                      });
-                    }
-                  }
-                }
-              ]
-            );
-          }}
-          style={styles.headerAction}
-        >
-          <Ionicons name="trash" size={24} color="red" />
+        <View style={styles.headerCenter}>
+          <View style={styles.loopIcon}>
+            <Ionicons name="sync" size={16} color={loop.color} />
+          </View>
+          <Text style={styles.headerTitle}>Loop Lists</Text>
+        </View>
+        
+        <TouchableOpacity onPress={handleReloop} style={styles.headerAction}>
+          <Ionicons name="refresh-outline" size={22} color={Colors.light.background} />
         </TouchableOpacity>
       </View>
 
