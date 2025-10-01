@@ -1249,44 +1249,84 @@ const LoopDetailScreen: React.FC = () => {
           
           <ScrollView style={styles.modalContent}>
             {currentAttachments.map((attachment, index) => (
-              <View key={index} style={styles.attachmentItem}>
-                <View style={styles.attachmentInfo}>
-                  <Ionicons 
-                    name={attachment.type === 'image' ? 'image' : 'document'} 
-                    size={24} 
-                    color={Colors.light.primary} 
-                  />
-                  <View style={styles.attachmentDetails}>
-                    <Text style={styles.attachmentName}>
-                      {attachment.name || `${attachment.type === 'image' ? 'Image' : 'File'} ${index + 1}`}
-                    </Text>
-                    {attachment.size && (
-                      <Text style={styles.attachmentSize}>
-                        {(attachment.size / 1024).toFixed(1)} KB
+              <View key={index} style={styles.attachmentContainer}>
+                {/* Image Preview for image attachments */}
+                {attachment.type === 'image' && attachment.uri && (
+                  <View style={styles.imagePreviewContainer}>
+                    <Image 
+                      source={{ uri: attachment.uri }} 
+                      style={styles.imagePreview}
+                      resizeMode="cover"
+                    />
+                  </View>
+                )}
+                
+                {/* File Info Row */}
+                <View style={styles.attachmentItem}>
+                  <View style={styles.attachmentInfo}>
+                    <Ionicons 
+                      name={attachment.type === 'image' ? 'image' : 'document'} 
+                      size={24} 
+                      color={Colors.light.primary} 
+                    />
+                    <View style={styles.attachmentDetails}>
+                      <Text style={styles.attachmentName}>
+                        {attachment.name || `${attachment.type === 'image' ? 'Image' : 'File'} ${index + 1}`}
                       </Text>
+                      {attachment.size && (
+                        <Text style={styles.attachmentSize}>
+                          {(attachment.size / 1024).toFixed(1)} KB
+                        </Text>
+                      )}
+                      {attachment.type === 'image' && attachment.width && attachment.height && (
+                        <Text style={styles.attachmentSize}>
+                          {attachment.width} × {attachment.height}
+                        </Text>
+                      )}
+                    </View>
+                  </View>
+                  
+                  <View style={styles.attachmentActions}>
+                    {attachment.type === 'image' && attachment.uri && (
+                      <TouchableOpacity 
+                        style={styles.attachmentActionButton}
+                        onPress={() => {
+                          Alert.alert(
+                            'Full Size Image',
+                            'Tap to view full size image',
+                            [
+                              { text: 'Cancel', style: 'cancel' },
+                              { 
+                                text: 'View', 
+                                onPress: () => {
+                                  // In a real app, this would open the image in full screen
+                                  Alert.alert('Image Viewer', `Viewing: ${attachment.name}\nURI: ${attachment.uri}`);
+                                }
+                              }
+                            ]
+                          );
+                        }}
+                      >
+                        <Ionicons name="expand-outline" size={20} color={Colors.light.primary} />
+                      </TouchableOpacity>
                     )}
-                    {attachment.type === 'image' && attachment.width && attachment.height && (
-                      <Text style={styles.attachmentSize}>
-                        {attachment.width} × {attachment.height}
-                      </Text>
-                    )}
+                    
+                    <TouchableOpacity 
+                      style={styles.attachmentActionButton}
+                      onPress={() => {
+                        if (attachment.uri) {
+                          Alert.alert(
+                            'File Information', 
+                            `Name: ${attachment.name || 'Unknown'}\nType: ${attachment.type || 'Unknown'}\nSize: ${attachment.size ? (attachment.size / 1024).toFixed(1) + ' KB' : 'Unknown'}\nURI: ${attachment.uri}`,
+                            [{ text: 'OK' }]
+                          );
+                        }
+                      }}
+                    >
+                      <Ionicons name="information-circle-outline" size={20} color={Colors.light.textSecondary} />
+                    </TouchableOpacity>
                   </View>
                 </View>
-                
-                <TouchableOpacity 
-                  style={styles.attachmentAction}
-                  onPress={() => {
-                    if (attachment.uri) {
-                      Alert.alert(
-                        'File Location', 
-                        `File saved at: ${attachment.uri}`,
-                        [{ text: 'OK' }]
-                      );
-                    }
-                  }}
-                >
-                  <Ionicons name="information-circle-outline" size={20} color={Colors.light.textSecondary} />
-                </TouchableOpacity>
               </View>
             ))}
             
