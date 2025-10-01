@@ -204,7 +204,19 @@ const Dashboard: React.FC = () => {
               <FavoriteItem key={loop.id} loop={loop} />
             ))
           ) : (
-            <Text style={styles.emptyText}>No favorites yet</Text>
+            <Text style={styles.emptyText}>No favorites yet. Use the ❤️ icon on your loops to add them here!</Text>
+          )}
+        </View>
+
+        {/* Recent Loops Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Your Loops</Text>
+          {loops.length > 0 ? (
+            loops.slice(0, 5).map((loop) => (
+              <LoopCard key={loop.id} loop={loop} onToggleFavorite={toggleFavorite} />
+            ))
+          ) : (
+            <Text style={styles.emptyText}>No loops yet</Text>
           )}
         </View>
 
