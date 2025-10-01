@@ -241,7 +241,11 @@ async def login(login_data: UserLogin):
 # Loop Routes
 @api_router.get("/loops", response_model=List[LoopResponse])
 async def get_loops(current_user = Depends(get_current_user)):
-    loops = await db.loops.find({"owner_id": current_user["_id"]}).to_list(1000)
+    # Only get non-deleted loops
+    loops = await db.loops.find({
+        "owner_id": current_user["_id"],
+        "is_deleted": {"$ne": True}
+    }).to_list(1000)
     
     # Calculate progress for each loop
     result = []
