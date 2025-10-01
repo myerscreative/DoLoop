@@ -410,6 +410,77 @@ async def reloop(loop_id: str, current_user = Depends(get_current_user)):
     
     return {"message": "Loop reset successfully"}
 
+# Favorites Routes
+@api_router.post("/loops/{loop_id}/toggle-favorite")
+async def toggle_favorite(loop_id: str, current_user = Depends(get_current_user)):
+    """Toggle favorite status for a loop"""
+    try:
+        # Find the loop and verify ownership
+        loop = await db.loops.find_one({"_id": ObjectId(loop_id), "owner_id": current_user["_id"]})
+        if not loop:
+            raise HTTPException(status_code=404, detail="Loop not found")
+        
+        # Get current favorite status (default to False if not set)
+        current_favorite_status = loop.get("is_favorite", False)
+        new_favorite_status = not current_favorite_status
+        
+        # Update the loop
+        await db.loops.update_one(
+            {"_id": ObjectId(loop_id)},
+            {
+                "$set": {
+                    "is_favorite": new_favorite_status,
+                    "updated_at": datetime.utcnow()
+                }
+            }
+        )
+        
+        return {
+            "message": f"Loop {'added to' if new_favorite_status else 'removed from'} favorites",
+            "is_favorite": new_favorite_status
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to toggle favorite: {str(e)}")
+
+@api_router.get("/loops/favorites")
+async def get_favorite_loops(current_user = Depends(get_current_user)):
+    """Get all favorite loops for the current user"""
+    try:
+        loops = await db.loops.find({
+            "owner_id": current_user["_id"],
+            "is_favorite": True
+        }).to_list(1000)
+        
+        # Calculate progress for each loop
+        result = []
+        for loop in loops:
+            # Get task counts
+            total_tasks = await db.tasks.count_documents({"loop_id": str(loop["_id"]), "status": {"$ne": "archived"}})
+            completed_tasks = await db.tasks.count_documents({"loop_id": str(loop["_id"]), "status": "completed"})
+            
+            progress = int((completed_tasks / total_tasks * 100) if total_tasks > 0 else 0)
+            
+            loop_response = LoopResponse(
+                id=str(loop["_id"]),
+                name=loop["name"],
+                description=loop.get("description"),
+                color=loop["color"],
+                owner_id=str(loop["owner_id"]),
+                reset_rule=loop["reset_rule"],
+                created_at=loop["created_at"],
+                updated_at=loop["updated_at"],
+                progress=progress,
+                total_tasks=total_tasks,
+                completed_tasks=completed_tasks
+            )
+            result.append(loop_response)
+        
+        return result
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get favorites: {str(e)}")
+
 # AI Routes
 @api_router.post("/ai/generate-loop")
 async def ai_generate_loop(request: AILoopRequest, current_user = Depends(get_current_user)):
