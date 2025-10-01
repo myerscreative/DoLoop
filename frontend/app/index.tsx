@@ -239,7 +239,7 @@ const Dashboard: React.FC = () => {
         <View style={styles.header}>
           <View style={styles.headerLeft}>
             <View style={styles.logoContainer}>
-              <Ionicons name="sync" size={20} color={Colors.light.primary} />
+              <Ionicons name="sync" size={20} color={colors.primary} />
             </View>
             <View>
               <Text style={styles.welcomeText}>Welcome back</Text>
