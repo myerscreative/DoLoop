@@ -57,8 +57,8 @@ class TaskFieldsTestSuite:
         except Exception as e:
             self.log(f"Request failed: {str(e)}", "ERROR")
             return None
-        
-    def test_user_registration_and_login(self) -> bool:
+            
+    def test_auth_setup(self):
         """Test user registration and login to get auth token"""
         self.log("Testing user registration and login...")
         
