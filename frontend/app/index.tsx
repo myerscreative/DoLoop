@@ -547,6 +547,82 @@ const styles = StyleSheet.create({
     color: Colors.light.background,
     marginLeft: 8,
   },
+  loopCard: {
+    backgroundColor: Colors.light.surface,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+    borderLeftWidth: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  loopHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 12,
+  },
+  loopInfo: {
+    flex: 1,
+    marginRight: 16,
+  },
+  loopName: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: Colors.light.text,
+    marginBottom: 4,
+  },
+  loopDescription: {
+    fontSize: 14,
+    color: Colors.light.textSecondary,
+    lineHeight: 20,
+  },
+  loopStats: {
+    alignItems: 'flex-end',
+    marginRight: 12,
+  },
+  loopProgress: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: Colors.light.text,
+  },
+  loopTaskCount: {
+    fontSize: 12,
+    color: Colors.light.textSecondary,
+    marginTop: 2,
+  },
+  heartButton: {
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: Colors.light.backgroundSecondary,
+  },
+  progressContainer: {
+    marginTop: 8,
+  },
+  progressBackground: {
+    height: 6,
+    backgroundColor: Colors.light.backgroundSecondary,
+    borderRadius: 3,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    borderRadius: 3,
+  },
+  resetInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  resetText: {
+    fontSize: 12,
+    color: Colors.light.textSecondary,
+    marginLeft: 4,
+    textTransform: 'capitalize',
+  },
 });
 
 export default Dashboard;
