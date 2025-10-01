@@ -209,6 +209,8 @@ const EditLoopScreen: React.FC = () => {
             onPress={handleDelete}
             style={styles.deleteButton}
             disabled={deleting}
+            activeOpacity={0.7}
+            hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
           >
             <Ionicons name="trash-outline" size={24} color={Colors.light.error} />
           </TouchableOpacity>
