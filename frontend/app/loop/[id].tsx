@@ -32,6 +32,9 @@ const LoopDetailScreen: React.FC = () => {
   const [newTaskType, setNewTaskType] = useState<'recurring' | 'one-time'>('recurring');
   const [addingTask, setAddingTask] = useState(false);
   const [expandedTasks, setExpandedTasks] = useState<Set<string>>(new Set());
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [editTaskText, setEditTaskText] = useState('');
+  const [showEditTask, setShowEditTask] = useState(false);
 
   const fetchLoopData = async () => {
     if (!id) return;
