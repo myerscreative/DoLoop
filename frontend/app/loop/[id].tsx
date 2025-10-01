@@ -341,6 +341,13 @@ const LoopDetailScreen: React.FC = () => {
         <TouchableOpacity onPress={handleReloop} style={styles.headerAction}>
           <Ionicons name="refresh" size={24} color={Colors.light.background} />
         </TouchableOpacity>
+        
+        <TouchableOpacity 
+          onPress={() => router.push(`/edit-loop?id=${id}`)}
+          style={styles.headerAction}
+        >
+          <Ionicons name="create-outline" size={24} color={Colors.light.background} />
+        </TouchableOpacity>
       </View>
 
       <ScrollView 
