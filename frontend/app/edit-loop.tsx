@@ -122,21 +122,28 @@ const EditLoopScreen: React.FC = () => {
   };
 
   const handleDelete = () => {
-    Alert.alert(
-      'Delete Loop',
-      'Are you sure you want to delete this loop? This will also delete all tasks in this loop and cannot be undone.',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: confirmDelete,
-        },
-      ]
-    );
+    // For web compatibility, use a simple confirm
+    if (Platform.OS === 'web') {
+      if (window.confirm('Are you sure you want to delete this loop? This will also delete all tasks in this loop and cannot be undone.')) {
+        confirmDelete();
+      }
+    } else {
+      Alert.alert(
+        'Delete Loop',
+        'Are you sure you want to delete this loop? This will also delete all tasks in this loop and cannot be undone.',
+        [
+          {
+            text: 'Cancel',
+            style: 'cancel',
+          },
+          {
+            text: 'Delete',
+            style: 'destructive',
+            onPress: confirmDelete,
+          },
+        ]
+      );
+    }
   };
 
   const confirmDelete = async () => {
