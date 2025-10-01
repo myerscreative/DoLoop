@@ -168,10 +168,10 @@ const Dashboard: React.FC = () => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>My Loops</Text>
           <View style={styles.myLoopsList}>
-            <MyLoopItem title="My Day" icon="today" count={3} />
-            <MyLoopItem title="Important" icon="flag" count={2} />
-            <MyLoopItem title="Planned" icon="calendar" count={5} />
-            <MyLoopItem title="Assigned to me" icon="person" count={1} />
+            <MyLoopItem title="My Day" icon="today" count={3} category="my-day" />
+            <MyLoopItem title="Important" icon="flag" count={2} category="important" />
+            <MyLoopItem title="Planned" icon="calendar" count={5} category="planned" />
+            <MyLoopItem title="Assigned to me" icon="person" count={1} category="assigned" />
           </View>
         </View>
 
