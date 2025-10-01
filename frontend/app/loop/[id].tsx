@@ -173,6 +173,120 @@ const LoopDetailScreen: React.FC = () => {
     }
   };
 
+  const handleEditTask = (task: Task) => {
+    setEditingTask(task);
+    setEditTaskText(task.description);
+    setShowEditTask(true);
+  };
+
+  const handleUpdateTask = async () => {
+    if (!editingTask || !editTaskText.trim()) return;
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/tasks/${editingTask.id}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          description: editTaskText.trim(),
+        }),
+      });
+
+      if (response.ok) {
+        setShowEditTask(false);
+        setEditingTask(null);
+        setEditTaskText('');
+        fetchLoopData();
+        showMessage({
+          message: 'Task updated successfully!',
+          type: 'success',
+        });
+      }
+    } catch (error) {
+      showMessage({
+        message: 'Failed to update task',
+        type: 'danger',
+      });
+    }
+  };
+
+  const handleDeleteTask = async (taskId: string) => {
+    if (!confirm('Delete this task? This action cannot be undone.')) return;
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/tasks/${taskId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        fetchLoopData();
+        showMessage({
+          message: 'Task deleted successfully!',
+          type: 'success',
+        });
+      }
+    } catch (error) {
+      showMessage({
+        message: 'Failed to delete task',
+        type: 'danger',
+      });
+    }
+  };
+
+  const handleAddNote = (taskId: string) => {
+    const note = prompt('Add a note for this task:');
+    if (note) {
+      showMessage({
+        message: `Note added: "${note}"`,
+        type: 'success',
+      });
+    }
+  };
+
+  const handleAddDueDate = (taskId: string) => {
+    showMessage({
+      message: 'Due date feature coming soon!',
+      type: 'info',
+    });
+  };
+
+  const handleAssignTask = (taskId: string) => {
+    showMessage({
+      message: 'Task assignment feature coming soon!',
+      type: 'info',
+    });
+  };
+
+  const handleAddTag = (taskId: string) => {
+    const tag = prompt('Add a tag for this task:');
+    if (tag) {
+      showMessage({
+        message: `Tag added: "${tag}"`,
+        type: 'success',
+      });
+    }
+  };
+
+  const handleAttachFile = (taskId: string) => {
+    showMessage({
+      message: 'File attachment feature coming soon!',
+      type: 'info',
+    });
+  };
+
+  const handleAttachImage = (taskId: string) => {
+    showMessage({
+      message: 'Image attachment feature coming soon!',
+      type: 'info',
+    });
+  };
+
   const toggleTaskExpanded = (taskId: string) => {
     const newExpanded = new Set(expandedTasks);
     if (newExpanded.has(taskId)) {
