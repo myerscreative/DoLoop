@@ -23,11 +23,17 @@ export interface Loop {
 }
 
 export interface Task {
+  id: string;
   _id: string;
   loop_id: string;
   description: string;
   type: 'recurring' | 'one-time';
   assigned_user_id?: string;
+  assigned_email?: string;
+  due_date?: Date;
+  tags?: string[];
+  notes?: string;
+  attachments?: any[];
   status: 'pending' | 'completed' | 'archived';
   completed_at?: Date;
   created_at: Date;
