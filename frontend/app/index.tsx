@@ -234,7 +234,7 @@ const Dashboard: React.FC = () => {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <View style={styles.header}>
           <View style={styles.headerLeft}>
