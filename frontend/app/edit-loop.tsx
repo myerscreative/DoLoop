@@ -122,6 +122,7 @@ const EditLoopScreen: React.FC = () => {
   };
 
   const handleDelete = () => {
+    console.log('Delete button clicked!'); // Debug log
     // For web compatibility, use a simple confirm
     if (Platform.OS === 'web') {
       if (window.confirm('Are you sure you want to delete this loop? This will also delete all tasks in this loop and cannot be undone.')) {
