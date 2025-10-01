@@ -106,6 +106,11 @@ class TaskResponse(BaseModel):
     description: str
     type: str
     assigned_user_id: Optional[str]
+    assigned_email: Optional[str]
+    due_date: Optional[datetime]
+    tags: Optional[List[str]]
+    notes: Optional[str]
+    attachments: Optional[List[dict]]
     status: str
     completed_at: Optional[datetime]
     created_at: datetime
