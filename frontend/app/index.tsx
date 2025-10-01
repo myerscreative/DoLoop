@@ -359,6 +359,7 @@ const Dashboard: React.FC = () => {
           </TouchableOpacity>
         </View>
       </ScrollView>
+      </GestureHandlerRootView>
     </SafeAreaView>
   );
 };
