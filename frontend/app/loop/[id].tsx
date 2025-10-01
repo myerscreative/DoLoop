@@ -352,16 +352,27 @@ const LoopDetailScreen: React.FC = () => {
   };
 
   const handleAddTag = (taskId: string) => {
+    const task = tasks.find(t => t.id === taskId);
     setCurrentTaskId(taskId);
+    setTaskTags(task?.tags || []);
+    setNewTag('');
     setShowTagModal(true);
   };
 
   const handleTagSubmit = async () => {
     if (!newTag.trim() || !currentTaskId) return;
     
-    const task = tasks.find(t => t.id === currentTaskId);
-    const currentTags = task?.tags || [];
-    const updatedTags = [...currentTags, newTag.trim()];
+    const trimmedTag = newTag.trim();
+    if (taskTags.includes(trimmedTag)) {
+      showMessage({
+        message: 'Tag already exists!',
+        type: 'warning',
+      });
+      return;
+    }
+
+    const updatedTags = [...taskTags, trimmedTag];
+    setTaskTags(updatedTags);
     
     try {
       const response = await fetch(`${API_BASE_URL}/api/tasks/${currentTaskId}`, {
@@ -376,7 +387,6 @@ const LoopDetailScreen: React.FC = () => {
       });
 
       if (response.ok) {
-        setShowTagModal(false);
         setNewTag('');
         fetchLoopData();
         showMessage({
@@ -387,6 +397,37 @@ const LoopDetailScreen: React.FC = () => {
     } catch (error) {
       showMessage({
         message: 'Failed to add tag',
+        type: 'danger',
+      });
+    }
+  };
+
+  const handleRemoveTag = async (tagToRemove: string) => {
+    const updatedTags = taskTags.filter(tag => tag !== tagToRemove);
+    setTaskTags(updatedTags);
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/tasks/${currentTaskId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          tags: updatedTags,
+        }),
+      });
+
+      if (response.ok) {
+        fetchLoopData();
+        showMessage({
+          message: 'Tag removed successfully!',
+          type: 'success',
+        });
+      }
+    } catch (error) {
+      showMessage({
+        message: 'Failed to remove tag',
         type: 'danger',
       });
     }
