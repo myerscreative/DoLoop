@@ -205,11 +205,12 @@ const Dashboard: React.FC = () => {
     title: string; 
     icon: keyof typeof Ionicons.glyphMap; 
     count?: number;
-    category: string;
-  }> = ({ title, icon, count, category }) => (
+    category?: string;
+    onPress?: () => void;
+  }> = ({ title, icon, count, category, onPress }) => (
     <TouchableOpacity 
       style={styles.myLoopItem} 
-      onPress={() => router.push(`/my-loops?category=${category}`)}
+      onPress={onPress || (() => router.push(`/my-loops?category=${category}`))}
     >
       <Ionicons name={icon} size={20} color={Colors.light.textSecondary} />
       <Text style={styles.myLoopText}>{title}</Text>
