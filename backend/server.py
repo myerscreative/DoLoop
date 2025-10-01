@@ -94,6 +94,11 @@ class TaskCreate(BaseModel):
     description: str
     type: str = Field(..., pattern="^(recurring|one-time)$")
     assigned_user_id: Optional[str] = None
+    assigned_email: Optional[str] = None
+    due_date: Optional[datetime] = None
+    tags: Optional[List[str]] = []
+    notes: Optional[str] = None
+    attachments: Optional[List[dict]] = []
 
 class TaskResponse(BaseModel):
     id: str
