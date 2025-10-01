@@ -352,7 +352,13 @@ const styles = StyleSheet.create({
     color: Colors.light.text,
   },
   deleteButton: {
-    padding: 8,
+    padding: 12,
+    backgroundColor: 'rgba(255, 89, 153, 0.1)',
+    borderRadius: 8,
+    minWidth: 44,
+    minHeight: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   content: {
     flex: 1,
