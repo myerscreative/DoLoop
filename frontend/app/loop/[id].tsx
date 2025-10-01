@@ -432,11 +432,18 @@ const LoopDetailScreen: React.FC = () => {
             >
               <Text style={styles.modalCloseText}>Cancel</Text>
             </TouchableOpacity>
-            <Text style={styles.modalTitle}>Adding New Task to "{loop.name}"</Text>
+            <View style={styles.modalTitleContainer}>
+              <Text style={styles.modalTitle}>Add New Task</Text>
+              <Text style={styles.modalSubtitle}>to "{loop.name}"</Text>
+            </View>
             <TouchableOpacity 
               onPress={handleAddTask}
               disabled={!newTaskText.trim() || addingTask}
-              style={[styles.modalSaveButton, (!newTaskText.trim() || addingTask) && styles.modalSaveButtonDisabled]}
+              style={[
+                styles.modalSaveButton, 
+                { backgroundColor: loop?.color || Colors.light.primary },
+                (!newTaskText.trim() || addingTask) && styles.modalSaveButtonDisabled
+              ]}
             >
               <Text style={[styles.modalSaveText, (!newTaskText.trim() || addingTask) && styles.modalSaveTextDisabled]}>
                 {addingTask ? 'Adding...' : 'Add'}
