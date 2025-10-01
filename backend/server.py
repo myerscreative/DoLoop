@@ -643,6 +643,16 @@ async def update_task(task_id: str, task_data: TaskUpdate, current_user = Depend
             update_data["description"] = task_data.description
         if task_data.type is not None:
             update_data["type"] = task_data.type
+        if task_data.assigned_email is not None:
+            update_data["assigned_email"] = task_data.assigned_email
+        if task_data.due_date is not None:
+            update_data["due_date"] = task_data.due_date
+        if task_data.tags is not None:
+            update_data["tags"] = task_data.tags
+        if task_data.notes is not None:
+            update_data["notes"] = task_data.notes
+        if task_data.attachments is not None:
+            update_data["attachments"] = task_data.attachments
         
         # Update the task
         await db.tasks.update_one(
