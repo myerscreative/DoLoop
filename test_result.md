@@ -234,6 +234,7 @@ metadata:
 
 test_plan:
   current_focus:
+    - "Deleted Loops Navigation"
     - "Color Palette Integration"
     - "Authentication Screens"
     - "Dashboard Screen"
