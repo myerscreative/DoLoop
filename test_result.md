@@ -214,6 +214,18 @@ frontend:
         agent: "main"
         comment: "Implement user's specified color palette: #FFC93A, #FF5999, #00CAD1, #7D4DA2"
 
+  - task: "Deleted Loops Navigation"
+    implemented: true
+    working: "NA"
+    file: "app/index.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added navigation link to deleted loops screen in the My Loops section of the dashboard. Modified MyLoopItem component to accept optional onPress prop. Users can now access deleted loops via the dashboard."
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
