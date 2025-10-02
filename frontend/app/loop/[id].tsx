@@ -67,7 +67,7 @@ const LoopDetailScreen: React.FC = () => {
   const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: Colors.light.background,
+      backgroundColor: colors.background,
     },
     loadingContainer: {
       flex: 1,
