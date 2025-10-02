@@ -364,12 +364,17 @@ const Dashboard: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchLoops();
+    console.log('Dashboard: useEffect - calling fetchLoops');
+    fetchLoops().then(() => {
+      console.log('Dashboard: fetchLoops completed');
+      setLoading(false);
+    });
+    fetchFavorites();
   }, []);
 
   const onRefresh = () => {
-    setRefreshing(true);
     fetchLoops();
+    fetchFavorites();
   };
 
   const CategoryButton: React.FC<{ 
