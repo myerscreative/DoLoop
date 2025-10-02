@@ -311,28 +311,7 @@ const Dashboard: React.FC = () => {
     },
   });
 
-  const fetchLoops = async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/loops`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setLoops(data);
-        // Get actual favorites from API
-        fetchFavorites();
-      }
-    } catch (error) {
-      console.log('Error fetching loops:', error);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
+  // Using context fetchLoops instead
 
   const fetchFavorites = async () => {
     try {
