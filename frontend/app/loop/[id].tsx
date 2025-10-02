@@ -67,7 +67,7 @@ const LoopDetailScreen: React.FC = () => {
   const styles = React.useMemo(() => StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: colors.background,
+      backgroundColor: colors?.background || '#FFFFFF',
     },
     loadingContainer: {
       flex: 1,
