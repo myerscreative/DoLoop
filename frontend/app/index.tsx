@@ -19,7 +19,10 @@ import { router } from 'expo-router';
 import SwipeableLoopCard from '../components/SwipeableLoopCard';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
-const API_BASE_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || '';
+// For local development, call backend directly on port 8001
+const API_BASE_URL = typeof window !== 'undefined' 
+  ? 'http://localhost:8001'  // Direct backend call for web development
+  : (Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || '');
 
 const Dashboard: React.FC = () => {
   const { user, token, logout } = useAuth();
