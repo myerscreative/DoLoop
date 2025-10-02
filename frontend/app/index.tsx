@@ -12,6 +12,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
+import { useLoops } from '../contexts/LoopsContext';
 import { Loop } from '../types';
 import Constants from 'expo-constants';
 import { router } from 'expo-router';
