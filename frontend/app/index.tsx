@@ -343,6 +343,20 @@ const Dashboard: React.FC = () => {
       console.log('Error fetching favorites:', error);
     }
   };
+  const toggleCardMinimized = (loopId: string) => {
+    const newMinimized = new Set(minimizedCards);
+    if (newMinimized.has(loopId)) {
+      newMinimized.delete(loopId);
+    } else {
+      newMinimized.add(loopId);
+    }
+    setMinimizedCards(newMinimized);
+  };
+
+  const handleLoopsReorder = (newData: Loop[]) => {
+    setLoops(newData);
+    // TODO: Save new order to backend
+  };
 
   const toggleFavorite = async (loopId: string) => {
     try {
