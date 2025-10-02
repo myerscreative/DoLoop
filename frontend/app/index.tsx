@@ -20,10 +20,15 @@ import SwipeableLoopCard from '../components/SwipeableLoopCard';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import DraggableFlatList, { RenderItemParams } from 'react-native-draggable-flatlist';
 
-// For local development, call backend directly on port 8001
-const API_BASE_URL = typeof window !== 'undefined' 
-  ? 'http://localhost:8001'  // Direct backend call for web development
-  : (Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || '');
+// Use different URLs for web vs mobile
+const API_BASE_URL = (() => {
+  // For web development (localhost), call backend directly
+  if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+    return 'http://localhost:8001';
+  }
+  // For mobile and deployed environments, use the preview URL
+  return Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || '';
+})();
 
 const Dashboard: React.FC = () => {
   const { user, token, logout } = useAuth();
