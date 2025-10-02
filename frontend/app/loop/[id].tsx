@@ -848,6 +848,13 @@ const LoopDetailScreen: React.FC = () => {
   const totalActiveTasks = tasks.filter(t => t.status !== 'archived').length;
   const progress = totalActiveTasks > 0 ? Math.round((completedTasks / totalActiveTasks) * 100) : 0;
 
+  // Handle task reordering
+  const handleTasksReorder = async (newData: Task[]) => {
+    setTasks(newData);
+    // TODO: Save new order to backend
+    console.log('Tasks reordered:', newData.map(t => ({ id: t.id, description: t.description })));
+  };
+
   const styles = StyleSheet.create({
     container: {
       flex: 1,
