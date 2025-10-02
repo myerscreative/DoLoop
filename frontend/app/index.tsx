@@ -340,7 +340,6 @@ const Dashboard: React.FC = () => {
     setMinimizedCards(newMinimized);
   };
 
-  const { reorderLoops } = useLoops();
   const handleLoopsReorder = (newData: Loop[]) => {
     reorderLoops(newData);
   };
