@@ -649,7 +649,10 @@ const LoopDetailScreen: React.FC = () => {
       <View key={task.id} style={styles.cleanTaskContainer}>
         {/* Main Task Row with Visual Indicators */}
         <TouchableOpacity 
-          style={styles.cleanTaskItem}
+          style={[
+            styles.cleanTaskItem,
+            isDragging && { backgroundColor: colors.backgroundSecondary }
+          ]}
           onPress={() => handleEditTask(task)}
           activeOpacity={0.7}
         >
