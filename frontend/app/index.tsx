@@ -457,7 +457,7 @@ const Dashboard: React.FC = () => {
       onPress={() => router.push(`/loop/${loop.id}`)}
     >
       <View style={[styles.favoriteIcon, { backgroundColor: loop.color }]}>
-        <Ionicons name="sync" size={16} color={Colors.light.background} />
+        <Ionicons name="sync" size={16} color={colors.background} />
       </View>
       <Text style={styles.favoriteText}>{loop.name}</Text>
       <TouchableOpacity 
@@ -633,7 +633,7 @@ const Dashboard: React.FC = () => {
             style={styles.aiCreateButton}
             onPress={() => router.push('/ai-create-loop')}
           >
-            <Ionicons name="sparkles" size={24} color={Colors.light.background} />
+            <Ionicons name="sparkles" size={24} color={colors.background} />
             <Text style={styles.aiCreateButtonText}>Create with AI</Text>
           </TouchableOpacity>
           
@@ -641,7 +641,7 @@ const Dashboard: React.FC = () => {
             style={styles.createButton}
             onPress={() => router.push('/create-loop')}
           >
-            <Ionicons name="add" size={24} color={Colors.light.background} />
+            <Ionicons name="add" size={24} color={colors.background} />
             <Text style={styles.createButtonText}>Create Manually</Text>
           </TouchableOpacity>
         </View>
