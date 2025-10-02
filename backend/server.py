@@ -405,6 +405,43 @@ async def soft_delete_loop(loop_id: str, current_user = Depends(get_current_user
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to delete loop: {str(e)}")
 
+@api_router.patch("/loops/reorder")
+async def reorder_loops(request: LoopReorderRequest, current_user = Depends(get_current_user)):
+    """Reorder loops based on provided order"""
+    try:
+        # Verify all loops belong to the user
+        loop_object_ids = []
+        for loop_id in request.loop_ids:
+            try:
+                object_id = ObjectId(loop_id)
+                loop_object_ids.append(object_id)
+            except:
+                raise HTTPException(status_code=404, detail=f"Invalid loop ID: {loop_id}")
+        
+        # Check that all loops exist and belong to user
+        user_loops = await db.loops.find({
+            "_id": {"$in": loop_object_ids},
+            "owner_id": current_user["_id"],
+            "is_deleted": {"$ne": True}
+        }).to_list(100)
+        
+        if len(user_loops) != len(request.loop_ids):
+            raise HTTPException(status_code=404, detail="Some loops not found or access denied")
+        
+        # Update the order field for each loop
+        for index, loop_id in enumerate(request.loop_ids):
+            await db.loops.update_one(
+                {"_id": ObjectId(loop_id)},
+                {"$set": {"order": index, "updated_at": datetime.utcnow()}}
+            )
+        
+        return {"message": "Loops reordered successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to reorder loops: {str(e)}")
+
 @api_router.post("/loops/{loop_id}/restore")
 async def restore_loop(loop_id: str, current_user = Depends(get_current_user)):
     """Restore a soft-deleted loop"""
