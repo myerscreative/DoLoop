@@ -83,7 +83,7 @@ export const LoopsProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     
     // Optionally sync to backend: make a PATCH request to FastAPI endpoint
     try {
-      const token = await AsyncStorage.getItem('token');
+      const token = await AsyncStorage.getItem('auth_token');
       if (token) {
         const loopIds = newLoops.map(loop => loop.id);
         await fetch(`${API_BASE_URL}/api/loops/reorder`, {
