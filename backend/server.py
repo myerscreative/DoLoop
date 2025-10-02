@@ -132,6 +132,9 @@ class AIOptimizeLoopRequest(BaseModel):
 class FavoriteToggleRequest(BaseModel):
     loop_id: str
 
+class LoopReorderRequest(BaseModel):
+    loop_ids: List[str]
+
 class LoopUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
