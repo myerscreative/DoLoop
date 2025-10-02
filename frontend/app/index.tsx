@@ -17,7 +17,6 @@ import Constants from 'expo-constants';
 import { router } from 'expo-router';
 import SwipeableLoopCard from '../components/SwipeableLoopCard';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { Colors } from '../constants/Colors';
 
 const API_BASE_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || '';
 
