@@ -544,6 +544,8 @@ const Dashboard: React.FC = () => {
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
           <Text style={styles.loadingText}>Loading your loops...</Text>
+          <Text style={styles.loadingText}>Loops count: {loops.length}</Text>
+          <Text style={styles.loadingText}>Refreshing: {refreshing ? 'Yes' : 'No'}</Text>
         </View>
       </SafeAreaView>
     );
