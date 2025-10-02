@@ -11,7 +11,7 @@ import sys
 import os
 
 # Get backend URL from frontend .env
-BACKEND_URL = "https://routineloop.preview.emergentagent.com/api"
+BACKEND_URL = "https://checklist-app-40.preview.emergentagent.com/api"
 
 class TaskFieldsTestSuite:
     def __init__(self):

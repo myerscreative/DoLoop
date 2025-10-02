@@ -21,17 +21,28 @@ export const LoopsProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Load loops from AsyncStorage or backend on mount
   const fetchLoops = async () => {
+    console.log('LoopsContext: fetchLoops started');
     setRefreshing(true);
     try {
       // First try to load from AsyncStorage for offline support
       const storedLoops = await AsyncStorage.getItem('loops');
+      console.log('AsyncStorage loops:', storedLoops);
       if (storedLoops) {
-        setLoops(JSON.parse(storedLoops));
+        const parsedLoops = JSON.parse(storedLoops);
+        console.log('Parsed stored loops:', parsedLoops);
+        setLoops(parsedLoops);
+      } else {
+        // Fallback data to prevent blank screen
+        console.log('No stored loops, using fallback');
+        const fallbackLoops = [{ id: 'temp', name: 'Temp Loop', progress: 0, completed_tasks: 0, total_tasks: 1, color: '#FFC93A' }];
+        setLoops(fallbackLoops);
       }
       
       // Then fetch from backend to get latest data
       const token = await AsyncStorage.getItem('token');
+      console.log('Token exists:', !!token);
       if (token) {
+        console.log('Fetching from backend:', `${API_BASE_URL}/api/loops`);
         const response = await fetch(`${API_BASE_URL}/api/loops`, {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -39,16 +50,21 @@ export const LoopsProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           },
         });
         
+        console.log('Backend response status:', response.status);
         if (response.ok) {
           const backendLoops = await response.json();
+          console.log('Backend loops received:', backendLoops);
           setLoops(backendLoops);
           // Update local storage with fresh data
           await AsyncStorage.setItem('loops', JSON.stringify(backendLoops));
+        } else {
+          console.log('Backend response not ok:', await response.text());
         }
       }
     } catch (error) {
       console.log('Error fetching loops:', error);
     } finally {
+      console.log('LoopsContext: fetchLoops completed');
       setRefreshing(false);
     }
   };
