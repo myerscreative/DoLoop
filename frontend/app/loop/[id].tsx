@@ -29,7 +29,6 @@ const API_BASE_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || '';
 const LoopDetailScreen: React.FC = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { token } = useAuth();
-  const { colors } = useTheme();
   const [loop, setLoop] = useState<Loop | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
