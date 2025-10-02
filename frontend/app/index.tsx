@@ -189,7 +189,7 @@ const Dashboard: React.FC = () => {
     progressBackground: {
       flex: 1,
       height: 6,
-      backgroundColor: colors.border,
+      backgroundColor: colors.surface,
       borderRadius: 3,
       marginRight: 12,
     },
@@ -241,7 +241,7 @@ const Dashboard: React.FC = () => {
       alignItems: 'center',
       padding: 16,
       borderBottomWidth: 1,
-      borderBottomColor: colors.border,
+      borderBottomColor: colors.surface,
     },
     myLoopText: {
       flex: 1,
