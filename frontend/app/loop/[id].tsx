@@ -895,7 +895,7 @@ const LoopDetailScreen: React.FC = () => {
   const progress = totalActiveTasks > 0 ? Math.round((completedTasks / totalActiveTasks) * 100) : 0;
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Clean Header Design */}
       <View style={[styles.cleanHeader, { backgroundColor: loop.color }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
