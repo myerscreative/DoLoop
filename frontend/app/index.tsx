@@ -28,6 +28,7 @@ const Dashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [searchText, setSearchText] = useState('');
+  const [favorites, setFavorites] = useState<Loop[]>([]);
 
   const fetchLoops = async () => {
     try {
