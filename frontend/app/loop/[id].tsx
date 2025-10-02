@@ -597,7 +597,7 @@ const LoopDetailScreen: React.FC = () => {
     onPress?: () => void;
     value?: string;
     color?: string;
-  }> = ({ icon, label, onPress, value, color = Colors.light.textSecondary }) => (
+  }> = ({ icon, label, onPress, value, color = colors.textSecondary }) => (
     <TouchableOpacity 
       style={styles.actionRow} 
       onPress={onPress}
@@ -606,7 +606,7 @@ const LoopDetailScreen: React.FC = () => {
       <Ionicons name={icon} size={20} color={color} />
       <Text style={styles.actionLabel}>{label}</Text>
       {value && <Text style={styles.actionValue}>{value}</Text>}
-      {onPress && <Ionicons name="chevron-forward" size={16} color={Colors.light.textSecondary} />}
+      {onPress && <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />}
     </TouchableOpacity>
   );
 
@@ -640,54 +640,10 @@ const LoopDetailScreen: React.FC = () => {
   const renderTask = (task: Task, index: number) => {
     const isCompleted = task.status === 'completed';
     const isArchived = task.status === 'archived';
+    const isExpanded = expandedTasks.has(task.id);
+    const taskDetails = renderTaskDetails(task);
     
     if (isArchived) return null; // Don't show archived tasks
-    
-    // Generate visual indicators based on task metadata
-    const indicators = [];
-    
-    if (task.assigned_email) {
-      indicators.push(
-        <Ionicons key="person" name="person" size={16} color={Colors.light.textSecondary} />
-      );
-    }
-    
-    if (task.type === 'recurring') {
-      indicators.push(
-        <Ionicons key="refresh" name="refresh" size={16} color={Colors.light.textSecondary} />
-      );
-    }
-    
-    if (task.attachments && task.attachments.length > 0) {
-      // Show different icon based on attachment type
-      const hasImages = task.attachments.some(att => att.type === 'image');
-      indicators.push(
-        <Ionicons 
-          key="attachment" 
-          name={hasImages ? "camera" : "attach"} 
-          size={16} 
-          color={Colors.light.textSecondary} 
-        />
-      );
-    }
-    
-    if (task.notes) {
-      indicators.push(
-        <Ionicons key="note" name="chatbubble" size={16} color={Colors.light.textSecondary} />
-      );
-    }
-    
-    if (task.due_date) {
-      indicators.push(
-        <Ionicons key="calendar" name="calendar" size={16} color={Colors.light.textSecondary} />
-      );
-    }
-    
-    if (task.tags && task.tags.length > 0) {
-      indicators.push(
-        <Ionicons key="tag" name="pricetag" size={16} color={Colors.light.textSecondary} />
-      );
-    }
     
     return (
       <View key={task.id} style={styles.cleanTaskContainer}>
@@ -702,13 +658,13 @@ const LoopDetailScreen: React.FC = () => {
             style={[
               styles.taskRadio,
               isCompleted && styles.taskRadioCompleted,
-              { borderColor: loop?.color || Colors.light.primary }
+              { borderColor: loop?.color || colors.primary }
             ]}
             onPress={() => !isCompleted && handleCompleteTask(task.id)}
             disabled={isCompleted}
           >
             {isCompleted && (
-              <View style={[styles.taskRadioFill, { backgroundColor: loop?.color || Colors.light.primary }]} />
+              <View style={[styles.taskRadioFill, { backgroundColor: loop?.color || colors.primary }]} />
             )}
           </TouchableOpacity>
           
@@ -722,78 +678,76 @@ const LoopDetailScreen: React.FC = () => {
             </Text>
             
             {/* Visual Indicators Row - NOW CLICKABLE */}
-            {indicators.length > 0 && (
-              <View style={styles.taskIndicators}>
-                {/* Person Icon - Clickable for Assignment */}
-                {task.assigned_email && (
-                  <TouchableOpacity 
-                    style={styles.indicatorButton}
-                    onPress={() => handleAssignTask(task.id)}
-                  >
-                    <Ionicons name="person" size={16} color={Colors.light.textSecondary} />
-                  </TouchableOpacity>
-                )}
-                
-                {/* Recurring Icon */}
-                {task.type === 'recurring' && (
-                  <View style={styles.indicatorWrapper}>
-                    <Ionicons name="refresh" size={16} color={Colors.light.textSecondary} />
-                  </View>
-                )}
-                
-                {/* Attachment Icon - Clickable for View */}
-                {task.attachments && task.attachments.length > 0 && (
-                  <TouchableOpacity 
-                    style={styles.indicatorButton}
-                    onPress={() => {
-                      setCurrentAttachments(task.attachments || []);
-                      setShowAttachmentsModal(true);
-                    }}
-                  >
-                    <Ionicons 
-                      name={task.attachments.some(att => att.type === 'image') ? "camera" : "attach"} 
-                      size={16} 
-                      color={Colors.light.textSecondary} 
-                    />
-                  </TouchableOpacity>
-                )}
-                
-                {/* Notes Icon - Clickable for Notes */}
-                {task.notes && (
-                  <TouchableOpacity 
-                    style={styles.indicatorButton}
-                    onPress={() => handleAddNote(task.id)}
-                  >
-                    <Ionicons name="chatbubble" size={16} color={Colors.light.textSecondary} />
-                  </TouchableOpacity>
-                )}
-                
-                {/* Calendar Icon - Clickable for Due Date */}
-                {task.due_date && (
-                  <TouchableOpacity 
-                    style={styles.indicatorButton}
-                    onPress={() => handleAddDueDate(task.id)}
-                  >
-                    <Ionicons name="calendar" size={16} color={Colors.light.textSecondary} />
-                  </TouchableOpacity>
-                )}
-                
-                {/* Tags Icon - Clickable for Tag Management */}
-                {task.tags && task.tags.length > 0 && (
-                  <TouchableOpacity 
-                    style={styles.indicatorButton}
-                    onPress={() => handleAddTag(task.id)}
-                  >
-                    <Ionicons name="pricetag" size={16} color={Colors.light.textSecondary} />
-                  </TouchableOpacity>
-                )}
-              </View>
-            )}
+            <View style={styles.taskIndicators}>
+              {/* Person Icon - Clickable for Assignment */}
+              {task.assigned_email && (
+                <TouchableOpacity 
+                  style={styles.indicatorButton}
+                  onPress={() => handleAssignTask(task.id)}
+                >
+                  <Ionicons name="person" size={16} color={colors.textSecondary} />
+                </TouchableOpacity>
+              )}
+              
+              {/* Recurring Icon */}
+              {task.type === 'recurring' && (
+                <View style={styles.indicatorWrapper}>
+                  <Ionicons name="refresh" size={16} color={colors.textSecondary} />
+                </View>
+              )}
+              
+              {/* Attachment Icon - Clickable for View */}
+              {task.attachments && task.attachments.length > 0 && (
+                <TouchableOpacity 
+                  style={styles.indicatorButton}
+                  onPress={() => {
+                    setCurrentAttachments(task.attachments || []);
+                    setShowAttachmentsModal(true);
+                  }}
+                >
+                  <Ionicons 
+                    name={task.attachments.some(att => att.type === 'image') ? "camera" : "attach"} 
+                    size={16} 
+                    color={colors.textSecondary} 
+                  />
+                </TouchableOpacity>
+              )}
+              
+              {/* Notes Icon - Clickable for Notes */}
+              {task.notes && (
+                <TouchableOpacity 
+                  style={styles.indicatorButton}
+                  onPress={() => handleAddNote(task.id)}
+                >
+                  <Ionicons name="chatbubble" size={16} color={colors.textSecondary} />
+                </TouchableOpacity>
+              )}
+              
+              {/* Calendar Icon - Clickable for Due Date */}
+              {task.due_date && (
+                <TouchableOpacity 
+                  style={styles.indicatorButton}
+                  onPress={() => handleAddDueDate(task.id)}
+                >
+                  <Ionicons name="calendar" size={16} color={colors.textSecondary} />
+                </TouchableOpacity>
+              )}
+              
+              {/* Tags Icon - Clickable for Tag Management */}
+              {task.tags && task.tags.length > 0 && (
+                <TouchableOpacity 
+                  style={styles.indicatorButton}
+                  onPress={() => handleAddTag(task.id)}
+                >
+                  <Ionicons name="pricetag" size={16} color={colors.textSecondary} />
+                </TouchableOpacity>
+              )}
+            </View>
           </View>
           
           {/* Completion Status */}
           {isCompleted && (
-            <Ionicons name="checkmark-circle" size={20} color={Colors.light.success} />
+            <Ionicons name="checkmark-circle" size={20} color={colors.success} />
           )}
         </TouchableOpacity>
         
@@ -804,7 +758,7 @@ const LoopDetailScreen: React.FC = () => {
               style={styles.quickActionButton}
               onPress={() => handleAssignTask(task.id)}
             >
-              <Ionicons name="person-add-outline" size={18} color={Colors.light.textSecondary} />
+              <Ionicons name="person-add-outline" size={18} color={colors.textSecondary} />
             </TouchableOpacity>
           )}
           
@@ -814,14 +768,14 @@ const LoopDetailScreen: React.FC = () => {
                 style={styles.quickActionButton}
                 onPress={() => handleAttachImage(task.id)}
               >
-                <Ionicons name="camera-outline" size={18} color={Colors.light.textSecondary} />
+                <Ionicons name="camera-outline" size={18} color={colors.textSecondary} />
               </TouchableOpacity>
               
               <TouchableOpacity 
                 style={styles.quickActionButton}
                 onPress={() => handleAttachFile(task.id)}
               >
-                <Ionicons name="attach-outline" size={18} color={Colors.light.textSecondary} />
+                <Ionicons name="attach-outline" size={18} color={colors.textSecondary} />
               </TouchableOpacity>
             </>
           )}
@@ -831,7 +785,7 @@ const LoopDetailScreen: React.FC = () => {
               style={styles.quickActionButton}
               onPress={() => handleAddNote(task.id)}
             >
-              <Ionicons name="chatbubble-outline" size={18} color={Colors.light.textSecondary} />
+              <Ionicons name="chatbubble-outline" size={18} color={colors.textSecondary} />
             </TouchableOpacity>
           )}
           
@@ -840,7 +794,7 @@ const LoopDetailScreen: React.FC = () => {
               style={styles.quickActionButton}
               onPress={() => handleAddDueDate(task.id)}
             >
-              <Ionicons name="calendar-outline" size={18} color={Colors.light.textSecondary} />
+              <Ionicons name="calendar-outline" size={18} color={colors.textSecondary} />
             </TouchableOpacity>
           )}
           
@@ -849,7 +803,7 @@ const LoopDetailScreen: React.FC = () => {
               style={styles.quickActionButton}
               onPress={() => handleAddTag(task.id)}
             >
-              <Ionicons name="pricetag-outline" size={18} color={Colors.light.textSecondary} />
+              <Ionicons name="pricetag-outline" size={18} color={colors.textSecondary} />
             </TouchableOpacity>
           )}
           
@@ -857,7 +811,7 @@ const LoopDetailScreen: React.FC = () => {
             style={styles.quickActionButton}
             onPress={() => handleDeleteTask(task.id)}
           >
-            <Ionicons name="trash-outline" size={18} color={Colors.light.error} />
+            <Ionicons name="trash-outline" size={18} color={colors.textSecondary} />
           </TouchableOpacity>
         </View>
       </View>
@@ -866,7 +820,7 @@ const LoopDetailScreen: React.FC = () => {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.loadingContainer}>
           <Text style={styles.loadingText}>Loading loop...</Text>
         </View>
@@ -876,7 +830,7 @@ const LoopDetailScreen: React.FC = () => {
 
   if (!loop) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>Loop not found</Text>
           <TouchableOpacity 
@@ -894,12 +848,505 @@ const LoopDetailScreen: React.FC = () => {
   const totalActiveTasks = tasks.filter(t => t.status !== 'archived').length;
   const progress = totalActiveTasks > 0 ? Math.round((completedTasks / totalActiveTasks) * 100) : 0;
 
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    loadingContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    loadingText: {
+      fontSize: 16,
+      color: colors.textSecondary,
+    },
+    errorContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 24,
+    },
+    errorText: {
+      fontSize: 18,
+      color: colors.text,
+      marginBottom: 16,
+    },
+    errorButton: {
+      backgroundColor: colors.primary,
+      paddingHorizontal: 24,
+      paddingVertical: 12,
+      borderRadius: 8,
+    },
+    errorButtonText: {
+      color: colors.background,
+      fontWeight: '600',
+    },
+    cleanHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: 20,
+      paddingVertical: 16,
+      paddingTop: 20,
+      backgroundColor: loop?.color || colors.primary,
+    },
+    headerCenter: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    backButton: {
+      padding: 8,
+    },
+    loopIcon: {
+      width: 32,
+      height: 32,
+      borderRadius: 16,
+      backgroundColor: colors.background,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginRight: 12,
+    },
+    headerTitle: {
+      fontSize: 18,
+      fontWeight: '600',
+      color: colors.background,
+    },
+    headerAction: {
+      padding: 8,
+    },
+    content: {
+      flex: 1,
+    },
+    progressCard: {
+      backgroundColor: colors.surface,
+      margin: 16,
+      padding: 16,
+      borderRadius: 12,
+    },
+    progressText: {
+      fontSize: 14,
+      color: colors.textSecondary,
+      marginBottom: 8,
+    },
+    progressBar: {
+      height: 6,
+      backgroundColor: colors.backgroundSecondary,
+      borderRadius: 3,
+      overflow: 'hidden',
+    },
+    progressFill: {
+      height: '100%',
+      borderRadius: 3,
+    },
+    emptyTasks: {
+      alignItems: 'center',
+      paddingVertical: 60,
+      paddingHorizontal: 24,
+    },
+    emptyTasksTitle: {
+      fontSize: 18,
+      fontWeight: '600',
+      color: colors.text,
+      marginTop: 16,
+      marginBottom: 8,
+    },
+    emptyTasksDescription: {
+      fontSize: 14,
+      color: colors.textSecondary,
+      textAlign: 'center',
+      lineHeight: 20,
+    },
+    tasksList: {
+      paddingHorizontal: 16,
+    },
+    // Clean Task Design Styles
+    cleanTaskContainer: {
+      marginBottom: 8,
+    },
+    cleanTaskItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 16,
+      paddingHorizontal: 16,
+      backgroundColor: colors.surface,
+      borderRadius: 12,
+      minHeight: 60,
+    },
+    cleanTaskContent: {
+      flex: 1,
+      marginLeft: 12,
+    },
+    cleanTaskText: {
+      fontSize: 16,
+      fontWeight: '500',
+      color: colors.text,
+      marginBottom: 6,
+    },
+    taskTextCompleted: {
+      textDecorationLine: 'line-through',
+      color: colors.textSecondary,
+    },
+    taskIndicators: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+    },
+    indicatorWrapper: {
+      paddingHorizontal: 4,
+      paddingVertical: 2,
+    },
+    indicatorButton: {
+      paddingHorizontal: 4,
+      paddingVertical: 2,
+      borderRadius: 12,
+    },
+    taskRadio: {
+      width: 20,
+      height: 20,
+      borderRadius: 10,
+      borderWidth: 2,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginTop: 2,
+    },
+    taskRadioCompleted: {
+      backgroundColor: colors.backgroundSecondary,
+    },
+    taskRadioFill: {
+      width: 10,
+      height: 10,
+      borderRadius: 5,
+    },
+    quickActions: {
+      flexDirection: 'row',
+      justifyContent: 'flex-end',
+      paddingHorizontal: 16,
+      paddingBottom: 12,
+      gap: 8,
+    },
+    quickActionButton: {
+      padding: 8,
+      backgroundColor: colors.backgroundSecondary,
+      borderRadius: 20,
+    },
+    addStepButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      margin: 16,
+      padding: 16,
+      backgroundColor: colors.surface,
+      borderRadius: 12,
+      borderWidth: 2,
+      borderColor: colors.backgroundSecondary,
+      borderStyle: 'dashed',
+    },
+    addStepText: {
+      fontSize: 16,
+      fontWeight: '600',
+      marginLeft: 8,
+    },
+    modalContainer: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.5)',
+      justifyContent: 'flex-end',
+    },
+    modalHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: 20,
+      paddingVertical: 20,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.backgroundSecondary,
+      backgroundColor: colors.background,
+    },
+    modalCloseButton: {
+      padding: 12,
+      minWidth: 70,
+    },
+    modalCloseText: {
+      fontSize: 16,
+      color: colors.textSecondary,
+      fontWeight: '400',
+    },
+    modalTitleContainer: {
+      alignItems: 'center',
+      flex: 1,
+      paddingHorizontal: 16,
+    },
+    modalTitle: {
+      fontSize: 18,
+      fontWeight: '600',
+      color: colors.text,
+      textAlign: 'center',
+    },
+    modalSubtitle: {
+      fontSize: 14,
+      fontWeight: '400',
+      color: colors.textSecondary,
+      textAlign: 'center',
+      marginTop: 2,
+    },
+    modalSaveButton: {
+      paddingHorizontal: 20,
+      paddingVertical: 8,
+      borderRadius: 20,
+      minWidth: 70,
+      alignItems: 'center',
+    },
+    modalSaveButtonDisabled: {
+      opacity: 0.5,
+    },
+    modalSaveText: {
+      fontSize: 16,
+      fontWeight: '600',
+      color: colors.background,
+    },
+    modalSaveTextDisabled: {
+      color: colors.textSecondary,
+    },
+    modalContent: {
+      padding: 24,
+      paddingTop: 32,
+    },
+    inputContainer: {
+      marginBottom: 32,
+    },
+    inputLabel: {
+      fontSize: 16,
+      fontWeight: '600',
+      color: colors.text,
+      marginBottom: 12,
+    },
+    input: {
+      backgroundColor: colors.surface,
+      borderRadius: 12,
+      paddingHorizontal: 20,
+      paddingVertical: 18,
+      fontSize: 16,
+      color: colors.text,
+      borderWidth: 2,
+      borderColor: 'transparent',
+      minHeight: 56,
+    },
+    textArea: {
+      minHeight: 120,
+      textAlignVertical: 'top',
+    },
+    taskTypeContainer: {
+      gap: 16,
+    },
+    taskTypeOption: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: colors.surface,
+      borderRadius: 16,
+      padding: 20,
+      borderWidth: 2,
+      borderColor: 'transparent',
+      minHeight: 64,
+    },
+    taskTypeOptionSelected: {
+      backgroundColor: colors.backgroundSecondary,
+      borderColor: colors.primary,
+    },
+    taskTypeText: {
+      fontSize: 16,
+      fontWeight: '500',
+      color: colors.text,
+      marginLeft: 16,
+    },
+    // Date Picker Styles
+    datePickerWrapper: {
+      minHeight: 300,
+      justifyContent: 'center',
+    },
+    dateDisplay: {
+      alignItems: 'center',
+      marginTop: 20,
+      padding: 16,
+      backgroundColor: colors.surface,
+      borderRadius: 12,
+    },
+    dateDisplayText: {
+      fontSize: 16,
+      fontWeight: '600',
+      color: colors.text,
+    },
+    datePickerContainer: {
+      backgroundColor: colors.background,
+      borderTopLeftRadius: 20,
+      borderTopRightRadius: 20,
+      paddingBottom: 20,
+    },
+    datePickerHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingHorizontal: 20,
+      paddingVertical: 20,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.backgroundSecondary,
+    },
+    datePickerTitle: {
+      fontSize: 18,
+      fontWeight: '600',
+      color: colors.text,
+    },
+    datePicker: {
+      height: 200,
+    },
+    // Tag Management Styles
+    tagsContainer: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8,
+    },
+    tagChip: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: colors.backgroundSecondary,
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      borderRadius: 16,
+      gap: 6,
+    },
+    tagText: {
+      fontSize: 14,
+      color: colors.text,
+      fontWeight: '500',
+    },
+    tagInputContainer: {
+      flexDirection: 'row',
+      gap: 12,
+      alignItems: 'flex-end',
+    },
+    tagInput: {
+      flex: 1,
+    },
+    addTagButton: {
+      width: 56,
+      height: 56,
+      borderRadius: 28,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    // Attachment Modal Styles
+    attachmentContainer: {
+      marginBottom: 16,
+      backgroundColor: colors.surface,
+      borderRadius: 12,
+      overflow: 'hidden',
+    },
+    imagePreviewContainer: {
+      width: '100%',
+      height: 200,
+      backgroundColor: colors.backgroundSecondary,
+    },
+    imagePreview: {
+      width: '100%',
+      height: '100%',
+    },
+    imageFallback: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    },
+    imageFallbackText: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: colors.text,
+      marginTop: 8,
+      textAlign: 'center',
+    },
+    imageFallbackSubtext: {
+      fontSize: 12,
+      color: colors.textSecondary,
+      marginTop: 4,
+      textAlign: 'center',
+    },
+    attachmentItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingVertical: 16,
+      paddingHorizontal: 16,
+    },
+    attachmentInfo: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      flex: 1,
+    },
+    attachmentDetails: {
+      marginLeft: 12,
+      flex: 1,
+    },
+    attachmentName: {
+      fontSize: 16,
+      fontWeight: '500',
+      color: colors.text,
+      marginBottom: 4,
+    },
+    attachmentSize: {
+      fontSize: 12,
+      color: colors.textSecondary,
+    },
+    attachmentActions: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    attachmentActionButton: {
+      padding: 8,
+      marginLeft: 8,
+    },
+    emptyAttachments: {
+      alignItems: 'center',
+      paddingVertical: 60,
+    },
+    emptyAttachmentsText: {
+      fontSize: 16,
+      color: colors.textSecondary,
+      marginTop: 16,
+    },
+    actionRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 16,
+      paddingVertical: 8,
+    },
+    actionLabel: {
+      flex: 1,
+      fontSize: 14,
+      color: colors.textSecondary,
+      marginLeft: 12,
+    },
+    actionValue: {
+      fontSize: 12,
+      color: colors.primary,
+      marginRight: 8,
+    },
+  });
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Clean Header Design */}
-      <View style={[styles.cleanHeader, { backgroundColor: loop.color }]}>
+      <View style={styles.cleanHeader}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={24} color={Colors.light.background} />
+          <Ionicons name="chevron-back" size={24} color={colors.background} />
         </TouchableOpacity>
         
         <View style={styles.headerCenter}>
@@ -910,7 +1357,7 @@ const LoopDetailScreen: React.FC = () => {
         </View>
         
         <TouchableOpacity onPress={handleReloop} style={styles.headerAction}>
-          <Ionicons name="refresh-outline" size={22} color={Colors.light.background} />
+          <Ionicons name="refresh-outline" size={22} color={colors.background} />
         </TouchableOpacity>
       </View>
 
@@ -935,7 +1382,7 @@ const LoopDetailScreen: React.FC = () => {
         {/* Tasks List */}
         {tasks.length === 0 ? (
           <View style={styles.emptyTasks}>
-            <Ionicons name="list" size={48} color={Colors.light.textSecondary} />
+            <Ionicons name="list" size={48} color={colors.textSecondary} />
             <Text style={styles.emptyTasksTitle}>No tasks yet</Text>
             <Text style={styles.emptyTasksDescription}>
               Add your first task to get started with this loop.
@@ -976,7 +1423,7 @@ const LoopDetailScreen: React.FC = () => {
               disabled={!newTaskText.trim() || addingTask}
               style={[
                 styles.modalSaveButton, 
-                { backgroundColor: loop?.color || Colors.light.primary },
+                { backgroundColor: loop?.color || colors.primary },
                 (!newTaskText.trim() || addingTask) && styles.modalSaveButtonDisabled
               ]}
             >
@@ -994,7 +1441,7 @@ const LoopDetailScreen: React.FC = () => {
                 value={newTaskText}
                 onChangeText={setNewTaskText}
                 placeholder="What needs to be done?"
-                placeholderTextColor={Colors.light.textSecondary}
+                placeholderTextColor={colors.textSecondary}
                 autoFocus
                 maxLength={200}
               />
@@ -1013,11 +1460,11 @@ const LoopDetailScreen: React.FC = () => {
                   <Ionicons 
                     name="refresh" 
                     size={16} 
-                    color={newTaskType === 'recurring' ? (loop?.color || Colors.light.primary) : Colors.light.textSecondary} 
+                    color={newTaskType === 'recurring' ? (loop?.color || colors.primary) : colors.textSecondary} 
                   />
                   <Text style={[
                     styles.taskTypeText,
-                    newTaskType === 'recurring' && { color: loop?.color || Colors.light.primary }
+                    newTaskType === 'recurring' && { color: loop?.color || colors.primary }
                   ]}>
                     Loop Item (Recurring)
                   </Text>
@@ -1033,11 +1480,11 @@ const LoopDetailScreen: React.FC = () => {
                   <Ionicons 
                     name="checkmark-circle-outline" 
                     size={16} 
-                    color={newTaskType === 'one-time' ? (loop?.color || Colors.light.primary) : Colors.light.textSecondary} 
+                    color={newTaskType === 'one-time' ? (loop?.color || colors.primary) : colors.textSecondary} 
                   />
                   <Text style={[
                     styles.taskTypeText,
-                    newTaskType === 'one-time' && { color: loop?.color || Colors.light.primary }
+                    newTaskType === 'one-time' && { color: loop?.color || colors.primary }
                   ]}>
                     One Time Task
                   </Text>
@@ -1071,7 +1518,7 @@ const LoopDetailScreen: React.FC = () => {
               disabled={!editTaskText.trim()}
               style={[
                 styles.modalSaveButton, 
-                { backgroundColor: loop?.color || Colors.light.primary },
+                { backgroundColor: loop?.color || colors.primary },
                 !editTaskText.trim() && styles.modalSaveButtonDisabled
               ]}
             >
@@ -1089,7 +1536,7 @@ const LoopDetailScreen: React.FC = () => {
                 value={editTaskText}
                 onChangeText={setEditTaskText}
                 placeholder="What needs to be done?"
-                placeholderTextColor={Colors.light.textSecondary}
+                placeholderTextColor={colors.textSecondary}
                 autoFocus
                 maxLength={200}
               />
@@ -1115,7 +1562,7 @@ const LoopDetailScreen: React.FC = () => {
               onPress={() => handleDueDateChange(null, selectedDate)}
               style={[
                 styles.modalSaveButton, 
-                { backgroundColor: loop?.color || Colors.light.primary }
+                { backgroundColor: loop?.color || colors.primary }
               ]}
             >
               <Text style={styles.modalSaveText}>Set Date</Text>
@@ -1131,7 +1578,7 @@ const LoopDetailScreen: React.FC = () => {
                 onChange={handleDueDateChange}
                 minimumDate={new Date()}
                 style={styles.datePicker}
-                textColor={Colors.light.text}
+                textColor={colors.text}
               />
               
               {Platform.OS === 'android' && (
@@ -1161,7 +1608,7 @@ const LoopDetailScreen: React.FC = () => {
               disabled={!assignEmail.trim()}
               style={[
                 styles.modalSaveButton, 
-                { backgroundColor: loop?.color || Colors.light.primary },
+                { backgroundColor: loop?.color || colors.primary },
                 !assignEmail.trim() && styles.modalSaveButtonDisabled
               ]}
             >
@@ -1179,7 +1626,7 @@ const LoopDetailScreen: React.FC = () => {
                 value={assignEmail}
                 onChangeText={setAssignEmail}
                 placeholder="Enter email address"
-                placeholderTextColor={Colors.light.textSecondary}
+                placeholderTextColor={colors.textSecondary}
                 autoFocus
                 keyboardType="email-address"
                 autoCapitalize="none"
@@ -1215,7 +1662,7 @@ const LoopDetailScreen: React.FC = () => {
                       onPress={() => handleRemoveTag(tag)}
                     >
                       <Text style={styles.tagText}>{tag}</Text>
-                      <Ionicons name="close" size={16} color={Colors.light.textSecondary} />
+                      <Ionicons name="close" size={16} color={colors.textSecondary} />
                     </TouchableOpacity>
                   ))}
                 </View>
@@ -1231,7 +1678,7 @@ const LoopDetailScreen: React.FC = () => {
                   value={newTag}
                   onChangeText={setNewTag}
                   placeholder="Enter tag name"
-                  placeholderTextColor={Colors.light.textSecondary}
+                  placeholderTextColor={colors.textSecondary}
                   maxLength={50}
                   onSubmitEditing={handleTagSubmit}
                   returnKeyType="done"
@@ -1241,14 +1688,14 @@ const LoopDetailScreen: React.FC = () => {
                   disabled={!newTag.trim()}
                   style={[
                     styles.addTagButton,
-                    { backgroundColor: loop?.color || Colors.light.primary },
+                    { backgroundColor: loop?.color || colors.primary },
                     !newTag.trim() && styles.modalSaveButtonDisabled
                   ]}
                 >
                   <Ionicons 
                     name="add" 
                     size={20} 
-                    color={!newTag.trim() ? Colors.light.textSecondary : Colors.light.background} 
+                    color={!newTag.trim() ? colors.textSecondary : colors.background} 
                   />
                 </TouchableOpacity>
               </View>
@@ -1271,7 +1718,7 @@ const LoopDetailScreen: React.FC = () => {
               onPress={handleNoteSubmit}
               style={[
                 styles.modalSaveButton, 
-                { backgroundColor: loop?.color || Colors.light.primary }
+                { backgroundColor: loop?.color || colors.primary }
               ]}
             >
               <Text style={styles.modalSaveText}>Save</Text>
@@ -1286,7 +1733,7 @@ const LoopDetailScreen: React.FC = () => {
                 value={noteText}
                 onChangeText={setNoteText}
                 placeholder="Enter note..."
-                placeholderTextColor={Colors.light.textSecondary}
+                placeholderTextColor={colors.textSecondary}
                 autoFocus
                 multiline
                 numberOfLines={4}
@@ -1336,7 +1783,7 @@ const LoopDetailScreen: React.FC = () => {
                       <Ionicons 
                         name="image-outline" 
                         size={48} 
-                        color={Colors.light.textSecondary} 
+                        color={colors.textSecondary} 
                       />
                       <Text style={styles.imageFallbackText}>
                         {attachment.name || 'Image Preview'}
@@ -1354,7 +1801,7 @@ const LoopDetailScreen: React.FC = () => {
                     <Ionicons 
                       name={attachment.type === 'image' ? 'image' : 'document'} 
                       size={24} 
-                      color={Colors.light.primary} 
+                      color={colors.primary} 
                     />
                     <View style={styles.attachmentDetails}>
                       <Text style={styles.attachmentName}>
@@ -1394,7 +1841,7 @@ const LoopDetailScreen: React.FC = () => {
                           );
                         }}
                       >
-                        <Ionicons name="expand-outline" size={20} color={Colors.light.primary} />
+                        <Ionicons name="expand-outline" size={20} color={colors.primary} />
                       </TouchableOpacity>
                     )}
                     
@@ -1410,7 +1857,7 @@ const LoopDetailScreen: React.FC = () => {
                         }
                       }}
                     >
-                      <Ionicons name="information-circle-outline" size={20} color={Colors.light.textSecondary} />
+                      <Ionicons name="information-circle-outline" size={20} color={colors.textSecondary} />
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -1419,7 +1866,7 @@ const LoopDetailScreen: React.FC = () => {
             
             {currentAttachments.length === 0 && (
               <View style={styles.emptyAttachments}>
-                <Ionicons name="attach" size={48} color={Colors.light.textSecondary} />
+                <Ionicons name="attach" size={48} color={colors.textSecondary} />
                 <Text style={styles.emptyAttachmentsText}>No attachments</Text>
               </View>
             )}
@@ -1429,571 +1876,5 @@ const LoopDetailScreen: React.FC = () => {
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.light.background,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    fontSize: 16,
-    color: Colors.light.textSecondary,
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-  },
-  errorText: {
-    fontSize: 18,
-    color: Colors.light.text,
-    marginBottom: 16,
-  },
-  errorButton: {
-    backgroundColor: Colors.light.primary,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-  },
-  errorButtonText: {
-    color: Colors.light.background,
-    fontWeight: '600',
-  },
-  cleanHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    paddingTop: 20,
-  },
-  headerCenter: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  backButton: {
-    padding: 8,
-  },
-  headerContent: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginHorizontal: 16,
-  },
-  loopIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: Colors.light.background,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: Colors.light.background,
-  },
-  headerAction: {
-    padding: 8,
-  },
-  content: {
-    flex: 1,
-  },
-  progressCard: {
-    backgroundColor: Colors.light.surface,
-    margin: 16,
-    padding: 16,
-    borderRadius: 12,
-  },
-  progressText: {
-    fontSize: 14,
-    color: Colors.light.textSecondary,
-    marginBottom: 8,
-  },
-  progressBar: {
-    height: 6,
-    backgroundColor: Colors.light.backgroundSecondary,
-    borderRadius: 3,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    borderRadius: 3,
-  },
-  emptyTasks: {
-    alignItems: 'center',
-    paddingVertical: 60,
-    paddingHorizontal: 24,
-  },
-  emptyTasksTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: Colors.light.text,
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  emptyTasksDescription: {
-    fontSize: 14,
-    color: Colors.light.textSecondary,
-    textAlign: 'center',
-    lineHeight: 20,
-  },
-  tasksList: {
-    paddingHorizontal: 16,
-  },
-  taskContainer: {
-    marginBottom: 12,
-    backgroundColor: Colors.light.surface,
-    borderRadius: 12,
-    overflow: 'hidden',
-  },
-  taskItem: {
-    backgroundColor: 'transparent',
-  },
-  taskItemCompleted: {
-    opacity: 0.7,
-  },
-  taskMainContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  taskMainRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    flex: 1,
-    padding: 16,
-  },
-  taskContent: {
-    flex: 1,
-    marginHorizontal: 12,
-  },
-  taskDetailsContainer: {
-    marginTop: 8,
-  },
-  taskDetail: {
-    fontSize: 12,
-    color: Colors.light.textSecondary,
-    marginBottom: 2,
-  },
-  taskHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  expandButton: {
-    padding: 12,
-    paddingRight: 16,
-  },
-  taskRadio: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    borderWidth: 2,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 2,
-  },
-  taskRadioCompleted: {
-    backgroundColor: Colors.light.backgroundSecondary,
-  },
-  taskRadioFill: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-  },
-  taskText: {
-    fontSize: 16,
-    color: Colors.light.text,
-    lineHeight: 22,
-  },
-  taskTextCompleted: {
-    textDecorationLine: 'line-through',
-    color: Colors.light.textSecondary,
-  },
-  taskIcons: {
-    flexDirection: 'row',
-    gap: 4,
-    marginTop: 2,
-  },
-  taskActions: {
-    borderTopWidth: 1,
-    borderTopColor: Colors.light.backgroundSecondary,
-    paddingVertical: 8,
-  },
-  actionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-  },
-  actionLabel: {
-    flex: 1,
-    fontSize: 14,
-    color: Colors.light.textSecondary,
-    marginLeft: 12,
-  },
-  actionValue: {
-    fontSize: 12,
-    color: Colors.light.primary,
-    marginRight: 8,
-  },
-  actionSeparator: {
-    height: 1,
-    backgroundColor: Colors.light.backgroundSecondary,
-    marginVertical: 8,
-    marginHorizontal: 16,
-  },
-  addStepButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    margin: 16,
-    padding: 16,
-    backgroundColor: Colors.light.surface,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: Colors.light.backgroundSecondary,
-    borderStyle: 'dashed',
-  },
-  addStepText: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginLeft: 8,
-  },
-  modalContainer: {
-    flex: 1,
-    backgroundColor: Colors.light.background,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'flex-end',
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.light.backgroundSecondary,
-    backgroundColor: Colors.light.background,
-  },
-  modalCloseButton: {
-    padding: 12,
-    minWidth: 70,
-  },
-  modalCloseText: {
-    fontSize: 16,
-    color: Colors.light.textSecondary,
-    fontWeight: '400',
-  },
-  modalTitleContainer: {
-    alignItems: 'center',
-    flex: 1,
-    paddingHorizontal: 16,
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: Colors.light.text,
-    textAlign: 'center',
-  },
-  modalSubtitle: {
-    fontSize: 14,
-    fontWeight: '400',
-    color: Colors.light.textSecondary,
-    textAlign: 'center',
-    marginTop: 2,
-  },
-  modalSaveButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    borderRadius: 20,
-    minWidth: 70,
-    alignItems: 'center',
-  },
-  modalSaveButtonDisabled: {
-    opacity: 0.5,
-  },
-  modalSaveText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: Colors.light.background,
-  },
-  modalSaveTextDisabled: {
-    color: Colors.light.textSecondary,
-  },
-  modalContent: {
-    padding: 24,
-    paddingTop: 32,
-  },
-  inputContainer: {
-    marginBottom: 32,
-  },
-  inputLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: Colors.light.text,
-    marginBottom: 12,
-  },
-  input: {
-    backgroundColor: Colors.light.surface,
-    borderRadius: 12,
-    paddingHorizontal: 20,
-    paddingVertical: 18,
-    fontSize: 16,
-    color: Colors.light.text,
-    borderWidth: 2,
-    borderColor: 'transparent',
-    minHeight: 56,
-  },
-  textArea: {
-    minHeight: 120,
-    textAlignVertical: 'top',
-  },
-  taskTypeContainer: {
-    gap: 16,
-  },
-  taskTypeOption: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.light.surface,
-    borderRadius: 16,
-    padding: 20,
-    borderWidth: 2,
-    borderColor: 'transparent',
-    minHeight: 64,
-  },
-  taskTypeOptionSelected: {
-    backgroundColor: Colors.light.backgroundSecondary,
-    borderColor: Colors.light.primary,
-  },
-  taskTypeText: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: Colors.light.text,
-    marginLeft: 16,
-  },
-  datePickerContainer: {
-    backgroundColor: Colors.light.background,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    paddingBottom: 20,
-  },
-  datePickerHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.light.backgroundSecondary,
-  },
-  datePickerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: Colors.light.text,
-  },
-  datePicker: {
-    height: 200,
-  },
-  // Tag Management Styles
-  tagsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  tagChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.light.backgroundSecondary,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    gap: 6,
-  },
-  tagText: {
-    fontSize: 14,
-    color: Colors.light.text,
-    fontWeight: '500',
-  },
-  tagInputContainer: {
-    flexDirection: 'row',
-    gap: 12,
-    alignItems: 'flex-end',
-  },
-  tagInput: {
-    flex: 1,
-  },
-  addTagButton: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  // Date Picker Styles
-  datePickerWrapper: {
-    minHeight: 300,
-    justifyContent: 'center',
-  },
-  dateDisplay: {
-    alignItems: 'center',
-    marginTop: 20,
-    padding: 16,
-    backgroundColor: Colors.light.surface,
-    borderRadius: 12,
-  },
-  dateDisplayText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: Colors.light.text,
-  },
-  // Attachment Modal Styles
-  attachmentContainer: {
-    marginBottom: 16,
-    backgroundColor: Colors.light.surface,
-    borderRadius: 12,
-    overflow: 'hidden',
-  },
-  imagePreviewContainer: {
-    width: '100%',
-    height: 200,
-    backgroundColor: Colors.light.backgroundSecondary,
-  },
-  imagePreview: {
-    width: '100%',
-    height: '100%',
-  },
-  imageFallback: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-  },
-  imageFallbackText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: Colors.light.text,
-    marginTop: 8,
-    textAlign: 'center',
-  },
-  imageFallbackSubtext: {
-    fontSize: 12,
-    color: Colors.light.textSecondary,
-    marginTop: 4,
-    textAlign: 'center',
-  },
-  attachmentItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-  },
-  attachmentInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  attachmentDetails: {
-    marginLeft: 12,
-    flex: 1,
-  },
-  attachmentName: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: Colors.light.text,
-    marginBottom: 4,
-  },
-  attachmentSize: {
-    fontSize: 12,
-    color: Colors.light.textSecondary,
-  },
-  attachmentActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  attachmentActionButton: {
-    padding: 8,
-    marginLeft: 8,
-  },
-  emptyAttachments: {
-    alignItems: 'center',
-    paddingVertical: 60,
-  },
-  emptyAttachmentsText: {
-    fontSize: 16,
-    color: Colors.light.textSecondary,
-    marginTop: 16,
-  },
-  // Clean Task Design Styles
-  cleanTaskItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-    backgroundColor: Colors.light.surface,
-    borderRadius: 12,
-    marginBottom: 8,
-    minHeight: 60,
-  },
-  cleanTaskContent: {
-    flex: 1,
-    marginLeft: 12,
-  },
-  cleanTaskText: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: Colors.light.text,
-    marginBottom: 6,
-  },
-  taskIndicators: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  cleanTaskContainer: {
-    marginBottom: 8,
-  },
-  indicatorWrapper: {
-    paddingHorizontal: 4,
-    paddingVertical: 2,
-  },
-  indicatorButton: {
-    paddingHorizontal: 4,
-    paddingVertical: 2,
-    borderRadius: 12,
-  },
-  quickActions: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-    gap: 8,
-  },
-  quickActionButton: {
-    padding: 8,
-    backgroundColor: Colors.light.backgroundSecondary,
-    borderRadius: 20,
-  },
-});
 
 export default LoopDetailScreen;
