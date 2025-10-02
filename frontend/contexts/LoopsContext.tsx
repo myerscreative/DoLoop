@@ -3,7 +3,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Loop } from '../types';
 import Constants from 'expo-constants';
 
-const API_BASE_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || '';
+// For development, use the current host for API calls since they get proxied to backend
+const API_BASE_URL = typeof window !== 'undefined' 
+  ? `${window.location.protocol}//${window.location.host}`
+  : (Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || '');
+console.log('LoopsContext: Using API_BASE_URL:', API_BASE_URL);
 
 interface LoopsContextType {
   loops: Loop[];
