@@ -31,7 +31,6 @@ const Dashboard: React.FC = () => {
   const [favorites, setFavorites] = useState<Loop[]>([]);
   const [minimizedCards, setMinimizedCards] = useState<Set<string>>(new Set());
   const [yourLoopsExpanded, setYourLoopsExpanded] = useState(true);
-  const [favorites, setFavorites] = useState<Loop[]>([]);
   const styles = StyleSheet.create({
     container: {
       flex: 1,
