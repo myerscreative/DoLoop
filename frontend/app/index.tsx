@@ -554,15 +554,7 @@ const Dashboard: React.FC = () => {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <GestureHandlerRootView style={{ flex: 1 }}>
-        {/* Debug Header */}
-        <View style={{ padding: 20, backgroundColor: 'yellow' }}>
-          <Text style={{ color: 'black', fontSize: 16 }}>DEBUG INFO:</Text>
-          <Text style={{ color: 'black' }}>Loops loaded: {loops.length}</Text>
-          <Text style={{ color: 'black' }}>Loading: {loading ? 'Yes' : 'No'}</Text>
-          <Text style={{ color: 'black' }}>Refreshing: {refreshing ? 'Yes' : 'No'}</Text>
-          <Text style={{ color: 'black' }}>User: {user?.name || 'Not loaded'}</Text>
-          <Text style={{ color: 'black' }}>Theme: {theme}</Text>
-        </View>
+        
         
         <View style={styles.header}>
           <View style={styles.headerLeft}>
