@@ -398,10 +398,14 @@ const Dashboard: React.FC = () => {
     </TouchableOpacity>
   );
 
+  // Enhanced LoopCard Component with minimization and dark mode support
   const LoopCard: React.FC<{ 
-    loop: Loop; 
+    loop: Loop;
+    isMinimized?: boolean;
+    onToggleMinimize?: () => void;
+    isDragging?: boolean;
     onToggleFavorite: (loopId: string) => Promise<void>;
-  }> = ({ loop, onToggleFavorite }) => {
+  }> = ({ loop, isMinimized = false, onToggleMinimize, isDragging = false, onToggleFavorite }) => {
     const [isToggling, setIsToggling] = useState(false);
 
     const handleToggleFavorite = async (e: any) => {
