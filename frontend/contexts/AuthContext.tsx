@@ -34,8 +34,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const login = async (email: string, password: string) => {
+    console.log('AuthContext: Starting login for', email);
+    console.log('AuthContext: API_BASE_URL:', API_BASE_URL);
     try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+      const loginUrl = `${API_BASE_URL}/api/auth/login`;
+      console.log('AuthContext: Login URL:', loginUrl);
+      
+      const response = await fetch(loginUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -43,12 +48,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         body: JSON.stringify({ email, password }),
       });
 
+      console.log('AuthContext: Response status:', response.status);
       if (!response.ok) {
         const error = await response.json();
+        console.log('AuthContext: Login error:', error);
         throw new Error(error.detail || 'Login failed');
       }
 
       const data = await response.json();
+      console.log('AuthContext: Login successful, got data:', data);
       
       // Store auth data
       await AsyncStorage.setItem('auth_token', data.token);
