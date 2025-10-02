@@ -340,9 +340,9 @@ const Dashboard: React.FC = () => {
     setMinimizedCards(newMinimized);
   };
 
+  const { reorderLoops } = useLoops();
   const handleLoopsReorder = (newData: Loop[]) => {
-    setLoops(newData);
-    // TODO: Save new order to backend
+    reorderLoops(newData);
   };
 
   const toggleFavorite = async (loopId: string) => {
