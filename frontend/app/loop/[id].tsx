@@ -35,6 +35,7 @@ const API_BASE_URL = (() => {
 const LoopDetailScreen: React.FC = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { token } = useAuth();
+  const { theme, colors } = useTheme();
   const [loop, setLoop] = useState<Loop | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
