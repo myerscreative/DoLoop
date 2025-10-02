@@ -24,9 +24,8 @@ const API_BASE_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || '';
 const Dashboard: React.FC = () => {
   const { user, token, logout } = useAuth();
   const { theme, colors, toggleTheme } = useTheme();
-  const [loops, setLoops] = useState<Loop[]>([]);
+  const { loops, fetchLoops, refreshing } = useLoops();
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [favorites, setFavorites] = useState<Loop[]>([]);
   const [minimizedCards, setMinimizedCards] = useState<Set<string>>(new Set());
