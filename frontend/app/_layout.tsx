@@ -39,8 +39,10 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <ThemeProvider>
         <AuthProvider>
-          <RootLayoutNav />
-          <FlashMessage position="top" />
+          <LoopsProvider>
+            <RootLayoutNav />
+            <FlashMessage position="top" />
+          </LoopsProvider>
         </AuthProvider>
       </ThemeProvider>
     </SafeAreaProvider>
