@@ -18,6 +18,7 @@ import Constants from 'expo-constants';
 import { router } from 'expo-router';
 import SwipeableLoopCard from '../components/SwipeableLoopCard';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import DraggableFlatList, { RenderItemParams } from 'react-native-draggable-flatlist';
 
 // For local development, call backend directly on port 8001
 const API_BASE_URL = typeof window !== 'undefined' 
