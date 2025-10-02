@@ -427,24 +427,35 @@ const Dashboard: React.FC = () => {
     const progressWidth = `${loop.progress || 0}%`;
     
     return (
-      <TouchableOpacity 
-        style={[styles.loopCard, { borderLeftColor: loop.color }]}
-        onPress={() => router.push(`/loop/${loop.id}`)}
-      >
-        <View style={styles.loopHeader}>
+      <View style={[
+        styles.loopCard,
+        { 
+          borderLeftColor: loop.color,
+          backgroundColor: isDragging ? colors.backgroundSecondary : colors.surface 
+        },
+      ]}>
+        {/* Header with minimize toggle */}
+        <TouchableOpacity
+          style={styles.loopHeader}
+          onPress={() => router.push(`/loop/${loop.id}`)}
+        >
           <View style={styles.loopInfo}>
             <Text style={styles.loopName}>{loop.name}</Text>
-            {loop.description && (
+            {!isMinimized && loop.description && (
               <Text style={styles.loopDescription}>{loop.description}</Text>
             )}
           </View>
+          
           <View style={styles.loopStats}>
             <Text style={styles.loopProgress}>{loop.progress || 0}%</Text>
-            <Text style={styles.loopTaskCount}>
-              {loop.completed_tasks || 0}/{loop.total_tasks || 0}
-            </Text>
+            {!isMinimized && (
+              <Text style={styles.loopTaskCount}>
+                {loop.completed_tasks || 0}/{loop.total_tasks || 0}
+              </Text>
+            )}
           </View>
-          <TouchableOpacity 
+          
+          <TouchableOpacity
             style={styles.heartButton}
             onPress={handleToggleFavorite}
             disabled={isToggling}
@@ -455,24 +466,46 @@ const Dashboard: React.FC = () => {
               color={loop.is_favorite ? colors.secondary : colors.textSecondary} 
             />
           </TouchableOpacity>
-        </View>
-        
-        <View style={styles.progressContainer}>
-          <View style={styles.progressBackground}>
-            <View 
-              style={[styles.progressFill, { width: progressWidth, backgroundColor: loop.color }]} 
-            />
+
+          {onToggleMinimize && (
+            <TouchableOpacity
+              style={styles.minimizeButton}
+              onPress={onToggleMinimize}
+            >
+              <Ionicons 
+                name={isMinimized ? "chevron-down" : "chevron-up"} 
+                size={20} 
+                color={colors.textSecondary} 
+              />
+            </TouchableOpacity>
+          )}
+        </TouchableOpacity>
+
+        {/* Progress and reset info - hidden when minimized */}
+        {!isMinimized && (
+          <View style={styles.progressContainer}>
+            <View style={styles.progressBackground}>
+              <View 
+                style={[
+                  styles.progressFill,
+                  { 
+                    width: progressWidth,
+                    backgroundColor: loop.color
+                  }
+                ]} 
+              />
+            </View>
+            <View style={styles.resetInfo}>
+              <Ionicons 
+                name={loop.reset_rule === 'manual' ? 'hand-left' : loop.reset_rule === 'daily' ? 'calendar' : 'calendar-outline'} 
+                size={12} 
+                color={colors.textSecondary} 
+              />
+              <Text style={styles.resetText}>{loop.reset_rule}</Text>
+            </View>
           </View>
-          <View style={styles.resetInfo}>
-            <Ionicons 
-              name={loop.reset_rule === 'manual' ? 'hand-left' : loop.reset_rule === 'daily' ? 'calendar' : 'calendar-outline'} 
-              size={12} 
-              color={colors.textSecondary} 
-            />
-            <Text style={styles.resetText}>{loop.reset_rule}</Text>
-          </View>
-        </View>
-      </TouchableOpacity>
+        )}
+      </View>
     );
   };
 
