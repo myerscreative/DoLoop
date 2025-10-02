@@ -427,7 +427,7 @@ const Dashboard: React.FC = () => {
             <Ionicons 
               name={loop.is_favorite ? "heart" : "heart-outline"} 
               size={24} 
-              color={loop.is_favorite ? colors.secondary : Colors.light.textSecondary} 
+              color={loop.is_favorite ? colors.secondary : colors.textSecondary} 
             />
           </TouchableOpacity>
         </View>
@@ -442,7 +442,7 @@ const Dashboard: React.FC = () => {
             <Ionicons 
               name={loop.reset_rule === 'manual' ? 'hand-left' : loop.reset_rule === 'daily' ? 'calendar' : 'calendar-outline'} 
               size={12} 
-              color={Colors.light.textSecondary} 
+              color={colors.textSecondary} 
             />
             <Text style={styles.resetText}>{loop.reset_rule}</Text>
           </View>
@@ -467,7 +467,7 @@ const Dashboard: React.FC = () => {
         <Ionicons 
           name={loop.is_favorite ? "heart" : "heart-outline"} 
           size={20} 
-          color={loop.is_favorite ? colors.secondary : Colors.light.textSecondary} 
+          color={loop.is_favorite ? colors.secondary : colors.textSecondary} 
         />
       </TouchableOpacity>
     </TouchableOpacity>
@@ -484,7 +484,7 @@ const Dashboard: React.FC = () => {
       style={styles.myLoopItem} 
       onPress={onPress || (() => router.push(`/my-loops?category=${category}`))}
     >
-      <Ionicons name={icon} size={20} color={Colors.light.textSecondary} />
+      <Ionicons name={icon} size={20} color={colors.textSecondary} />
       <Text style={styles.myLoopText}>{title}</Text>
       {count !== undefined && (
         <View style={styles.countBadge}>
@@ -540,11 +540,11 @@ const Dashboard: React.FC = () => {
         {/* Search Bar */}
         <View style={styles.searchContainer}>
           <View style={styles.searchBar}>
-            <Ionicons name="search" size={20} color={Colors.light.textSecondary} />
+            <Ionicons name="search" size={20} color={colors.textSecondary} />
             <TextInput
               style={styles.searchInput}
               placeholder="Search for loops, tasks, notes, etc"
-              placeholderTextColor={Colors.light.textSecondary}
+              placeholderTextColor={colors.textSecondary}
               value={searchText}
               onChangeText={setSearchText}
             />
