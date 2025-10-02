@@ -6,10 +6,15 @@ import { showMessage } from 'react-native-flash-message';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// For local development, call backend directly on port 8001
-const API_BASE_URL = typeof window !== 'undefined' 
-  ? 'http://localhost:8001'  // Direct backend call for web development
-  : (Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || '');
+// Use different URLs for web vs mobile
+const API_BASE_URL = (() => {
+  // For web development (localhost), call backend directly
+  if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+    return 'http://localhost:8001';
+  }
+  // For mobile and deployed environments, use the preview URL
+  return Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || '';
+})();
 console.log('AuthContext: Using API_BASE_URL:', API_BASE_URL);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
