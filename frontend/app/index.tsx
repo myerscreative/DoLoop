@@ -118,6 +118,12 @@ const Dashboard: React.FC = () => {
       color: colors.text,
       marginBottom: 16,
     },
+    collapsibleHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 16,
+    },
     emptyText: {
       fontSize: 16,
       color: colors.textSecondary,
