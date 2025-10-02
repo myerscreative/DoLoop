@@ -21,7 +21,15 @@ import Constants from 'expo-constants';
 import { router, useLocalSearchParams } from 'expo-router';
 import { showMessage } from 'react-native-flash-message';
 
-const API_BASE_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || '';
+// Use different URLs for web vs mobile
+const API_BASE_URL = (() => {
+  // For web development (localhost), call backend directly
+  if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+    return 'http://localhost:8001';
+  }
+  // For mobile and deployed environments, use the preview URL
+  return Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || '';
+})();
 
 const LoopDetailScreen: React.FC = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
