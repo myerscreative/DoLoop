@@ -427,7 +427,7 @@ const Dashboard: React.FC = () => {
             <Ionicons 
               name={loop.is_favorite ? "heart" : "heart-outline"} 
               size={24} 
-              color={loop.is_favorite ? Colors.light.secondary : Colors.light.textSecondary} 
+              color={loop.is_favorite ? colors.secondary : Colors.light.textSecondary} 
             />
           </TouchableOpacity>
         </View>
@@ -467,7 +467,7 @@ const Dashboard: React.FC = () => {
         <Ionicons 
           name={loop.is_favorite ? "heart" : "heart-outline"} 
           size={20} 
-          color={loop.is_favorite ? Colors.light.secondary : Colors.light.textSecondary} 
+          color={loop.is_favorite ? colors.secondary : Colors.light.textSecondary} 
         />
       </TouchableOpacity>
     </TouchableOpacity>
@@ -621,7 +621,7 @@ const Dashboard: React.FC = () => {
             <CategoryButton 
               title="Shared" 
               icon="people" 
-              color={Colors.light.secondary}
+              color={colors.secondary}
               onPress={() => router.push('/library?category=shared')}
             />
           </View>
