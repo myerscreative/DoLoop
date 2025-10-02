@@ -632,17 +632,26 @@ const Dashboard: React.FC = () => {
             </TouchableOpacity>
             
             {yourLoopsExpanded && (
-              <View style={{ paddingTop: 8 }}>
-                {loops.map((loop) => (
-                  <LoopCard
-                    key={loop.id}
-                    loop={loop}
-                    isMinimized={minimizedCards.has(loop.id)}
-                    onToggleMinimize={() => toggleCardMinimized(loop.id)}
-                    onToggleFavorite={() => toggleFavorite(loop.id)}
-                  />
-                ))}
-              </View>
+              <DraggableFlatList
+                data={loops}
+                onDragEnd={({ data }) => handleLoopsReorder(data)}
+                keyExtractor={(item) => item.id}
+                renderItem={({ item, drag, isActive }: RenderItemParams<Loop>) => (
+                  <TouchableOpacity 
+                    onLongPress={drag}
+                    style={{ marginBottom: 8 }}
+                  >
+                    <LoopCard
+                      loop={item}
+                      isMinimized={minimizedCards.has(item.id)}
+                      onToggleMinimize={() => toggleCardMinimized(item.id)}
+                      isDragging={isActive}
+                      onToggleFavorite={() => toggleFavorite(item.id)}
+                    />
+                  </TouchableOpacity>
+                )}
+                containerStyle={{ paddingTop: 8 }}
+              />
             )}
           </View>
         )}
