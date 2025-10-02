@@ -20,9 +20,6 @@ import { Loop, Task } from '../../types';
 import Constants from 'expo-constants';
 import { router, useLocalSearchParams } from 'expo-router';
 import { showMessage } from 'react-native-flash-message';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import * as DocumentPicker from 'expo-document-picker';
-import * as ImagePicker from 'expo-image-picker';
 
 const API_BASE_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || '';
 
