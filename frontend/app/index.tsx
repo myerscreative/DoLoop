@@ -603,7 +603,7 @@ const Dashboard: React.FC = () => {
             <CategoryButton 
               title="Favorites" 
               icon="heart" 
-              color={Colors.light.primary}
+              color={colors.primary}
               onPress={() => router.push('/library?category=favorites')}
             />
             <CategoryButton 
