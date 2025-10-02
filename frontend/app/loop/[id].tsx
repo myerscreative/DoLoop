@@ -57,8 +57,8 @@ const LoopDetailScreen: React.FC = () => {
   const [showAttachmentsModal, setShowAttachmentsModal] = useState(false);
   const [currentAttachments, setCurrentAttachments] = useState<any[]>([]);
 
-  // Define styles early so they can be used by functions below
-  const styles = StyleSheet.create({
+  // Create styles dynamically using theme colors
+  const styles = React.useMemo(() => StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: colors.background,
