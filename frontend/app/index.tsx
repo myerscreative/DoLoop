@@ -376,7 +376,7 @@ const Dashboard: React.FC = () => {
     onPress: () => void;
   }> = ({ title, icon, color, onPress }) => (
     <TouchableOpacity style={[styles.categoryButton, { backgroundColor: color }]} onPress={onPress}>
-      <Ionicons name={icon} size={24} color={Colors.light.background} />
+      <Ionicons name={icon} size={24} color={colors.background} />
       <Text style={styles.categoryButtonText}>{title}</Text>
     </TouchableOpacity>
   );
