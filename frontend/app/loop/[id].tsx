@@ -1396,9 +1396,20 @@ const LoopDetailScreen: React.FC = () => {
             </Text>
           </View>
         ) : (
-          <View style={styles.tasksList}>
-            {tasks.map((task, index) => renderTask(task, index))}
-          </View>
+          <DraggableFlatList
+            data={tasks}
+            onDragEnd={({ data }) => handleTasksReorder(data)}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item, drag, isActive }) => (
+              <TouchableOpacity 
+                onLongPress={drag}
+                style={{ marginBottom: 8 }}
+              >
+                {renderTask(item, 0, isActive)}
+              </TouchableOpacity>
+            )}
+            containerStyle={styles.tasksList}
+          />
         )}
 
         {/* Add Task Button */}
