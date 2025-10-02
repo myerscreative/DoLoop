@@ -555,7 +555,7 @@ const LoopDetailScreen: React.FC = () => {
       color: colors.primary,
       marginRight: 8,
     },
-  });
+  }), [colors, theme]);
 
   const fetchLoopData = async () => {
     if (!id) return;
