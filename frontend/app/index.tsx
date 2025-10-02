@@ -28,6 +28,9 @@ const Dashboard: React.FC = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [favorites, setFavorites] = useState<Loop[]>([]);
+  const [minimizedCards, setMinimizedCards] = useState<Set<string>>(new Set());
+  const [yourLoopsExpanded, setYourLoopsExpanded] = useState(true);
+  const [favorites, setFavorites] = useState<Loop[]>([]);
   const styles = StyleSheet.create({
     container: {
       flex: 1,
