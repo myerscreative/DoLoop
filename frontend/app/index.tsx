@@ -615,7 +615,7 @@ const Dashboard: React.FC = () => {
             <CategoryButton 
               title="Work" 
               icon="briefcase" 
-              color={Colors.light.accent2}
+              color={colors.accent2}
               onPress={() => router.push('/library?category=work')}
             />
             <CategoryButton 
