@@ -39,7 +39,7 @@ export const LoopsProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }
       
       // Then fetch from backend to get latest data
-      const token = await AsyncStorage.getItem('token');
+      const token = await AsyncStorage.getItem('auth_token');
       console.log('Token exists:', !!token);
       if (token) {
         console.log('Fetching from backend:', `${API_BASE_URL}/api/loops`);
