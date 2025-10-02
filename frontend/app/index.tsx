@@ -627,23 +627,45 @@ const Dashboard: React.FC = () => {
           )}
         </View>
 
-        {/* Recent Loops Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Your Loops</Text>
-          {loops.length > 0 ? (
-            loops.slice(0, 5).map((loop) => (
-              <SwipeableLoopCard 
-                key={loop.id} 
-                loop={loop} 
-                token={token!}
-                onDelete={fetchLoops}
-                onToggleFavorite={toggleFavorite} 
+        {/* Your Loops - Collapsible */}
+        {loops.length > 0 && (
+          <View style={styles.section}>
+            <TouchableOpacity 
+              style={styles.collapsibleHeader}
+              onPress={() => setYourLoopsExpanded(!yourLoopsExpanded)}
+            >
+              <Text style={styles.sectionTitle}>Your Loops</Text>
+              <Ionicons 
+                name={yourLoopsExpanded ? "chevron-down" : "chevron-forward"} 
+                size={24} 
+                color={colors.textSecondary} 
               />
-            ))
-          ) : (
-            <Text style={styles.emptyText}>No loops yet</Text>
-          )}
-        </View>
+            </TouchableOpacity>
+            
+            {yourLoopsExpanded && (
+              <DraggableFlatList
+                data={loops}
+                onDragEnd={({ data }) => handleLoopsReorder(data)}
+                keyExtractor={(item) => item.id}
+                renderItem={({ item, drag, isActive }: RenderItemParams<Loop>) => (
+                  <TouchableOpacity 
+                    onLongPress={drag}
+                    style={{ marginBottom: 8 }}
+                  >
+                    <LoopCard
+                      loop={item}
+                      isMinimized={minimizedCards.has(item.id)}
+                      onToggleMinimize={() => toggleCardMinimized(item.id)}
+                      isDragging={isActive}
+                      onToggleFavorite={() => toggleFavorite(item.id)}
+                    />
+                  </TouchableOpacity>
+                )}
+                containerStyle={{ paddingTop: 8 }}
+              />
+            )}
+          </View>
+        )}
 
         {/* My Loops Items */}
         <View style={styles.section}>
