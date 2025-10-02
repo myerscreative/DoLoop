@@ -55,6 +55,7 @@ export const LoopsProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Load loops on mount
   useEffect(() => {
+    console.log('LoopsContext: useEffect triggered, calling fetchLoops');
     fetchLoops();
   }, []);
 
