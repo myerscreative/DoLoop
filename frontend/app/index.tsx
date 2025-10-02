@@ -184,6 +184,10 @@ const Dashboard: React.FC = () => {
     heartButton: {
       padding: 4,
     },
+    minimizeButton: {
+      padding: 4,
+      marginLeft: 8,
+    },
     progressContainer: {
       flexDirection: 'row',
       alignItems: 'center',
