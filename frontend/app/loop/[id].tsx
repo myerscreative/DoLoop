@@ -637,7 +637,7 @@ const LoopDetailScreen: React.FC = () => {
     return details;
   };
 
-  const renderTask = (task: Task, index: number) => {
+  const renderTask = (task: Task, index: number, isDragging: boolean = false) => {
     const isCompleted = task.status === 'completed';
     const isArchived = task.status === 'archived';
     const isExpanded = expandedTasks.has(task.id);
